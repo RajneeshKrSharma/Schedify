@@ -93,6 +93,7 @@ fun AddCollaboratorScreen(
     }
 }
 
+
 private fun buildFormFields(): List<FormField> {
     return listOf(
         FormField(
