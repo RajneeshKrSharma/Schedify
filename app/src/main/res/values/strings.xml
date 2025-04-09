@@ -33,4 +33,6 @@
     <string name="enter_group_name">Enter group name</string>
     <string name="arose_with_calm_reminders_it_s_schedify">Arose with calm reminders ! It\'s Schedify</string>
     <string name="group">Group : %1$s</string>
+    <string name="view_mode">View Mode</string>
+    <string name="more">More</string>
 </resources>
