@@ -16,6 +16,7 @@ import com.google.gson.Gson
 import com.unique.schedify.auth.login.presentation.LoginScreen
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
+import com.unique.schedify.post_auth.split_expense.presentation.AddCollaboratorScreen
 import com.unique.schedify.post_auth.split_expense.presentation.GroupListScreen
 import com.unique.schedify.post_auth.split_expense.presentation.LoadCollaboratorScreen
 import com.unique.schedify.post_auth.split_expense.presentation.SplitExpenseViewModel
@@ -79,6 +80,13 @@ class MainActivity : ComponentActivity() {
                             val groupItem = Gson().fromJson(groupJson, GroupExpenseResponseDto.Data::class.java)
 
                             LoadCollaboratorScreen(navController, groupItem, splitExpenseViewModel)
+                        }
+                        composable(route = Screen.AddCollaboratorScreen.route) { backStackEntry ->
+                            val parentEntry = remember(backStackEntry) {
+                                navController.getBackStackEntry("groupGraph")
+                            }
+                            val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry)
+                            AddCollaboratorScreen(navController, splitExpenseViewModel)
                         }
                     }
 

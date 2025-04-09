@@ -16,6 +16,7 @@ import com.unique.schedify.post_auth.post_auth_utils.CollaboratorState
 import com.unique.schedify.post_auth.post_auth_utils.ExpenseState
 import com.unique.schedify.post_auth.post_auth_utils.GroupState
 import com.unique.schedify.post_auth.post_auth_utils.GroupViewMode
+import com.unique.schedify.post_auth.post_auth_utils.SplitScheduleListMoreOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,6 +42,9 @@ class SplitExpenseViewModel @Inject constructor(
     private val _groupViewModeState = mutableStateOf(GroupViewMode.COLLABORATOR_LIST)
     val groupViewModeState: State<GroupViewMode> = _groupViewModeState
 
+    private val _splitScheduleListMoreOption = mutableStateOf(SplitScheduleListMoreOption.ADD_COLLABORATOR)
+    val splitScheduleListMoreOption: State<SplitScheduleListMoreOption> = _splitScheduleListMoreOption
+
     private val _getRestoreAllGroupDetails = mutableStateOf<Resource<GroupExpenseResponseDto>>(Resource.Default())
     val getRestoreAllGroupDetails: State<Resource<GroupExpenseResponseDto>> = _getRestoreAllGroupDetails
 
@@ -65,6 +69,10 @@ class SplitExpenseViewModel @Inject constructor(
 
     fun groupViewModeFilter(groupViewModeState: GroupViewMode) {
         _groupViewModeState.value = groupViewModeState
+    }
+
+    fun splitScheduleListMoreOptionFilter(splitScheduleListMoreOptionState: SplitScheduleListMoreOption) {
+        _splitScheduleListMoreOption.value = splitScheduleListMoreOptionState
     }
 
     fun showExpensesCollaboratorWise(groupViewModeState: GroupViewMode, collaboratorId: Int) {
