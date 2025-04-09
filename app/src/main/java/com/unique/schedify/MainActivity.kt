@@ -14,6 +14,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.google.gson.Gson
 import com.unique.schedify.auth.login.presentation.LoginScreen
+import com.unique.schedify.core.presentation.utils.GROUP_GRAPH_NAME
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
 import com.unique.schedify.post_auth.split_expense.presentation.AddCollaboratorScreen
@@ -56,10 +57,10 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(navController = navController)
                     }
 
-                    navigation(startDestination = Screen.GroupListScreen.route, route = "groupGraph") {
+                    navigation(startDestination = Screen.GroupListScreen.route, route = GROUP_GRAPH_NAME) {
                         composable(Screen.GroupListScreen.route) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
-                                navController.getBackStackEntry("groupGraph")
+                                navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
                             val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry)
                             GroupListScreen(navController, splitExpenseViewModel)
@@ -71,7 +72,7 @@ class MainActivity : ComponentActivity() {
                         ) { backStackEntry ->
 
                             val parentEntry = remember(backStackEntry) {
-                                navController.getBackStackEntry("groupGraph")
+                                navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
                             val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry) // Shared ViewModel
 
@@ -83,7 +84,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(route = Screen.AddCollaboratorScreen.route) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
-                                navController.getBackStackEntry("groupGraph")
+                                navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
                             val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry)
                             AddCollaboratorScreen(navController, splitExpenseViewModel)

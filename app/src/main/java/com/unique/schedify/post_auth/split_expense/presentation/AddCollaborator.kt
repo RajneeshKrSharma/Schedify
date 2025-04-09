@@ -22,6 +22,7 @@ import com.unique.schedify.post_auth.post_auth_utils.OFFLINE
 import com.unique.schedify.post_auth.post_auth_utils.ONLINE
 import com.unique.schedify.post_auth.post_auth_utils.OfflinePaymentsOptions
 import com.unique.schedify.post_auth.post_auth_utils.OnlinePaymentsOptions
+import com.unique.schedify.post_auth.post_auth_utils.SETTLE_MEDIUM_OFFLINE
 import com.unique.schedify.post_auth.post_auth_utils.SETTLE_MEDIUM_ONLINE
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,7 +139,7 @@ private fun buildFormFields(): List<FormField> {
             isRequired = true
         ),
         FormField(
-            id = SETTLE_MEDIUM_ONLINE,
+            id = SETTLE_MEDIUM_OFFLINE,
             label = AddCollaboratorFields.PREFERRED_SETTLE_MEDIUM.description,
             type = FormFieldType.CHECKBOX,
             visibleIf = VisibilityCondition(AddCollaboratorFields.PREFERRED_SETTLE_MODE.name, OFFLINE),
