@@ -64,7 +64,7 @@ class SplitExpenseViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _getAllGroupDetails.value = Resource.Loading()
-            delay(1000)
+            
             with(getGroupExpenseUseCase.execute()) {
                 when (this) {
                     is ApiResponseResource.Success -> {
@@ -87,7 +87,7 @@ class SplitExpenseViewModel @Inject constructor(
             when(groupState) {
                 GroupState.CREATE -> {
                     _groupState.value = Resource.Loading()
-                    delay(1000)
+                    
                     with(saveGroupUseCase.execute(args = groupUpdateDeleteRequestPostData.groupRequestData)) {
                         when (this) {
                             is ApiResponseResource.Success -> {
@@ -103,13 +103,13 @@ class SplitExpenseViewModel @Inject constructor(
                 }
                 GroupState.UPDATE -> {
                     _groupState.value = Resource.Loading()
-                    delay(1000)
+                    
                     with(updateGroupUseCase.execute(
                         args = groupUpdateDeleteRequestPostData
                     )) {
                         when (this) {
                             is ApiResponseResource.Success -> {
-                                delay(1000)
+                                
                                 getSplitExpenseData()
                                 _groupState.value = Resource.Success("Group Updated Successfully")
                             }
@@ -122,13 +122,13 @@ class SplitExpenseViewModel @Inject constructor(
                 }
                 GroupState.DELETE -> {
                     _groupState.value = Resource.Loading()
-                    delay(1000)
+                    
                     with(deleteGroupUseCase.execute(
                         args = groupUpdateDeleteRequestPostData.id
                     )) {
                         when (this) {
                             is ApiResponseResource.Success -> {
-                                delay(1000)
+                                
                                 getSplitExpenseData()
                                 _groupState.value = Resource.Success("Group Deleted Successfully")
                             }
@@ -154,13 +154,13 @@ class SplitExpenseViewModel @Inject constructor(
             when(collaboratorState) {
                 CollaboratorState.CREATE -> {
                     _collaboratorState.value = Resource.Loading()
-                    delay(1000)
+                    
                     with(saveCollaboratorUseCase.execute(
                         collaboratorRequestDto
                     )) {
                         when (this) {
                             is ApiResponseResource.Success -> {
-                                delay(1000)
+                                
                                 getSplitExpenseData()
                                 _collaboratorState.value = Resource.Success("Collaborator Created Successfully")
                             }
@@ -173,13 +173,13 @@ class SplitExpenseViewModel @Inject constructor(
                 }
                 CollaboratorState.UPDATE -> {
                     _collaboratorState.value = Resource.Loading()
-                    delay(1000)
+                    
                     with(updateCollaboratorUseCase.execute(
                         collaboratorRequestDto
                     )) {
                         when (this) {
                             is ApiResponseResource.Success -> {
-                                delay(1000)
+                                
                                 getSplitExpenseData()
                                 _collaboratorState.value = Resource.Success("Collaborator Updated Successfully")
                             }
@@ -192,13 +192,13 @@ class SplitExpenseViewModel @Inject constructor(
                 }
                 CollaboratorState.DELETE -> {
                     _collaboratorState.value = Resource.Loading()
-                    delay(1000)
+                    
                     with(deleteCollaboratorUseCase.execute(
                         collaboratorRequestDto
                     )) {
                         when (this) {
                             is ApiResponseResource.Success -> {
-                                delay(1000)
+                                
                                 getSplitExpenseData()
                                 _collaboratorState.value = Resource.Success("Collaborator Deleted Successfully")
                             }
@@ -223,13 +223,13 @@ class SplitExpenseViewModel @Inject constructor(
             when(expenseState) {
                 ExpenseState.CREATE -> {
                     _expenseState.value = Resource.Loading()
-                    delay(1000)
+                    
                     with(saveExpenseUseCase.execute(
                         expenseUpdateDeleteRequestPostData?.expenseRequestData
                     )) {
                         when (this) {
                             is ApiResponseResource.Success -> {
-                                delay(1000)
+                                
                                 getSplitExpenseData()
                                 _expenseState.value = Resource.Success("Expense Created Successfully")
                             }
