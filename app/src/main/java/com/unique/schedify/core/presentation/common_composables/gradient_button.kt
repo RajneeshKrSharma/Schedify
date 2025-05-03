@@ -49,7 +49,6 @@ fun GradientButton(
 
     Box(
         modifier = modifier
-            .fillMaxWidth()
             .background(
                 shape = RoundedCornerShape(dp12),
                 brush = if (enabled) btnGradient

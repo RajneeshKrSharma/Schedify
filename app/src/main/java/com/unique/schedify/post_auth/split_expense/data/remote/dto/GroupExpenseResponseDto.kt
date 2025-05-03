@@ -1,97 +1,158 @@
 package com.unique.schedify.post_auth.split_expense.data.remote.dto
 
-
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import java.util.Locale
 
 @Parcelize
 data class GroupExpenseResponseDto(
-    @SerializedName("message")
-    val message: String?,
-    @SerializedName("data")
-    val `data`: List<Data?>?
-): Parcelable {
+    @SerializedName("id")
+    val id: Int?,
+    @SerializedName("name")
+    val name: String?,
+    @SerializedName("created_on")
+    val createdOn: String?,
+    @SerializedName("createdBy")
+    val createdBy: Int?,
+    @SerializedName("collaborators")
+    val collaborators: ArrayList<Collaborator?>?
+) : Parcelable {
 
     @Parcelize
-    data class Data(
-        @SerializedName("collaborators")
-        val collaborators: List<Collaborator?>?,
-        @SerializedName("created_by_google_auth_user")
-        val createdByGoogleAuthUser: String?,
-        @SerializedName("created_by_user")
-        val createdByUser: Int?,
-        @SerializedName("grp_name")
-        val grpName: String?,
+    data class Collaborator(
         @SerializedName("id")
         val id: Int?,
-        @SerializedName("last_settled_amt")
-        val lastSettledAmt: String?,
-        @SerializedName("last_settled_date_time")
-        val lastSettledDateTime: String?,
-        @SerializedName("t_amt")
-        val tAmt: String?,
-        @SerializedName("t_item")
-        val tItem: Int?
-    ): Parcelable {
+        @SerializedName("createdBy")
+        val createdBy: Int?,
+        @SerializedName("collabUserId")
+        val collabUserId: Int?,
+        @SerializedName("collaboratorName")
+        val collaboratorName: String?,
+        @SerializedName("groupId")
+        val groupId: Int?,
+        @SerializedName("created_on")
+        val createdOn: String?,
+        @SerializedName("isActive")
+        val isActive: Boolean?,
+        @SerializedName("collabEmailId")
+        val collabEmailId: String?,
+        @SerializedName("status")
+        val status: String?,
+        @SerializedName("settle_modes")
+        val settleModes: List<String>?,
+        @SerializedName("settle_mediums")
+        val settleMediums: List<String>?,
+        @SerializedName("requested_payment_qr_url")
+        val requestedPaymentQrUrl: String?,
+        @SerializedName("redirect_upi_url")
+        val redirectUpiUrl: String?,
+        @SerializedName("detail")
+        val detail: String? = null,
+        @SerializedName("expenses")
+        val expenses: AllExpenses?
+
+    ) : Parcelable {
+
         @Parcelize
-        data class Collaborator(
-            @SerializedName("collaborator_name")
-            val collaboratorName: String?,
-            @SerializedName("collab_google_auth_user")
-            val collabGoogleAuthUser: Int?,
-            @SerializedName("collab_user")
-            val collabUser: Int?,
-            @SerializedName("expenses")
-            val expenses: List<Expense?>?,
-            @SerializedName("group_expense_id")
-            val groupExpenseId: Int?,
-            @SerializedName("id")
-            val id: Int?,
-            @SerializedName("redirect_upi_url")
-            val redirectUpiUrl: String?,
-            @SerializedName("requested_payment_qr_url")
-            val requestedPaymentQrUrl: String?,
-            @SerializedName("settle_medium")
-            val settleMedium: String?,
-            @SerializedName("settle_mode")
-            val settleMode: String?,
-            @SerializedName("status")
-            val status: String?
-        ): Parcelable {
+        data class AllExpenses(
+            @SerializedName("self")
+            val self: List<Expense>,
+            @SerializedName("lend")
+            val lend: List<Expense>,
+            @SerializedName("owe")
+            val owe: List<Expense>,
+
+            ) : Parcelable {
             @Parcelize
             data class Expense(
-                @SerializedName("date_time")
-                val dateTime: String?,
-                @SerializedName("i_amt")
-                val iAmt: String?,
-                @SerializedName("i_desp")
-                val iDesp: String?,
-                @SerializedName("i_name")
-                val iName: String?,
-                @SerializedName("i_notes")
-                val iNotes: String?,
-                @SerializedName("i_qty")
-                val iQty: String?,
                 @SerializedName("id")
                 val id: Int?,
-                @SerializedName("is_settled")
-                val isSettled: Boolean?
-            ): Parcelable
+
+                @SerializedName("eName")
+                val eName: String,
+
+                @SerializedName("eRawAmt")
+                val eRawAmt: Double,
+
+                @SerializedName("eAmt")
+                val eAmt: Double,
+
+                @SerializedName("eQty")
+                val eQty: Int,
+
+                @SerializedName("eQtyUnit")
+                val eQtyUnit: String,
+
+                @SerializedName("eDescription")
+                val eDescription: String,
+
+                @SerializedName("eExpenseType")
+                val eExpenseType: String,
+
+                @SerializedName("addedByCollaboratorId")
+                val addedByCollaboratorId: Int,
+
+                @SerializedName("expenseForCollaborator")
+                val expenseForCollaborator: Int,
+
+                @SerializedName("groupId")
+                val groupId: Int,
+
+                @SerializedName("created_on")
+                val createdOn: String
+            ) : Parcelable
         }
 
-        fun getTotalCollaborator(): Int {
-            return collaborators?.size ?: 0
-        }
+        fun collabName() : String
+                = collaboratorName?.takeIf { name -> name.isNotEmpty() } ?: collabEmailId ?: "Clb - $id"
 
-        fun getTotalExpensesCount(): Int {
-            return collaborators?.sumOf { collaborator ->
-                collaborator?.expenses?.size ?: 0
-            } ?: 0
+        fun getTotalExpense(): Int {
+            return expenses?.let { expense ->
+                expense.self + expense.lend + expense.owe
+            }?.size ?: 0
         }
     }
 
-    companion object {
-        fun empty() = GroupExpenseResponseDto(message = "", data = emptyList())
+    fun getTotalCollaborator(): Int {
+        return collaborators?.size ?: 0
+    }
+
+    fun getTotalExpense(): Int {
+        return collaborators?.sumOf { collaborator ->
+            collaborator?.expenses?.let { expense ->
+                (expense.self + expense.lend + expense.owe)
+                    .distinctBy { it.expenseForCollaborator }
+                    .size
+            } ?: 0
+        } ?: 0
+    }
+
+
+    fun getTotalExpenseValue(): Double {
+        return collaborators?.sumOf {
+            it?.expenses?.let { expense -> (expense.self.sumOf { selfAmt -> selfAmt.eAmt }) + (expense.lend.sumOf { lendAmt -> lendAmt.eAmt }) + (expense.owe.sumOf { oweAmt -> oweAmt.eAmt }) }
+                ?: 0.0
+        } ?: 0.0
+    }
+
+    fun getTotalExpenseById(collaboratorId: Int?): Int {
+        return collaborators?.firstOrNull { collaborator -> collaborator?.id == collaboratorId }?.let { collaborator ->
+            collaborator.expenses?.let { expense -> expense.self.size + expense.lend.size + expense.owe.size } ?: 0
+        } ?: 0
+    }
+
+    fun getTotalExpenseValueById(collaboratorId: Int?): Double =
+        (collaborators?.firstOrNull { collaborator -> collaborator?.id == collaboratorId }?.let { collaborator ->
+            collaborator.expenses?.let { expense -> (expense.self.sumOf { selfAmt -> selfAmt.eAmt }) + (expense.lend.sumOf { lendAmt -> lendAmt.eAmt }) + (expense.owe.sumOf { oweAmt -> oweAmt.eAmt }) }
+                ?: 0.0
+        } ?: 0.0).let { total ->
+            String.format(Locale.ROOT,"%.2f", total).toDouble()
+        }
+
+    fun getCollaboratorName(id:Int): String?
+    = collaborators?.firstOrNull { it?.id == id }?.let { collaborator ->
+        collaborator.collaboratorName?.takeIf { name -> name.isNotEmpty() } ?:
+        collaborator.collabEmailId?.split("@")?.firstOrNull() ?: "Clb - ${collaborator.id}"
     }
 }

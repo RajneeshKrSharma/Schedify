@@ -17,7 +17,7 @@ import com.unique.schedify.auth.login.presentation.LoginScreen
 import com.unique.schedify.core.presentation.utils.GROUP_GRAPH_NAME
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
-import com.unique.schedify.post_auth.split_expense.presentation.AddCollaboratorScreen
+import com.unique.schedify.post_auth.split_expense.presentation.ExpenseScreen
 import com.unique.schedify.post_auth.split_expense.presentation.GroupListScreen
 import com.unique.schedify.post_auth.split_expense.presentation.LoadCollaboratorScreen
 import com.unique.schedify.post_auth.split_expense.presentation.SplitExpenseViewModel
@@ -78,16 +78,26 @@ class MainActivity : ComponentActivity() {
 
                             val groupJsonEncoded = backStackEntry.arguments?.getString("groupJson") ?: return@composable
                             val groupJson = URLDecoder.decode(groupJsonEncoded, StandardCharsets.UTF_8.toString())
-                            val groupItem = Gson().fromJson(groupJson, GroupExpenseResponseDto.Data::class.java)
+                            val groupItem = Gson().fromJson(groupJson, GroupExpenseResponseDto::class.java)
 
                             LoadCollaboratorScreen(navController, groupItem, splitExpenseViewModel)
                         }
-                        composable(route = Screen.AddCollaboratorScreen.route) { backStackEntry ->
+
+                        composable(
+                            route = "${Screen.ExpenseScreen.route}/{collaboratorJson}",
+                            arguments = listOf(navArgument("collaboratorJson") { type = NavType.StringType })) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
                             val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry)
-                            AddCollaboratorScreen(navController, splitExpenseViewModel)
+                            val collaboratorJsonEncoded = backStackEntry.arguments?.getString("collaboratorJson") ?: return@composable
+                            val collaboratorJsonDecoded = URLDecoder.decode(collaboratorJsonEncoded, StandardCharsets.UTF_8.toString())
+                            val collaboratorItem = Gson().fromJson(collaboratorJsonDecoded, GroupExpenseResponseDto.Collaborator::class.java)
+                            ExpenseScreen(
+                                navController = navController,
+                                collaborator = collaboratorItem,
+                                splitExpenseViewModel = splitExpenseViewModel
+                            )
                         }
                     }
 

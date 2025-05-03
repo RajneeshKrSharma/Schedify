@@ -1,46 +1,66 @@
+/*
 package com.unique.schedify.post_auth.split_expense.presentation
 
-import androidx.compose.foundation.layout.*
+import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import com.google.gson.Gson
 import com.unique.schedify.R
 import com.unique.schedify.core.presentation.base_composables.BaseCompose
 import com.unique.schedify.core.presentation.common_composables.FormBuilder
 import com.unique.schedify.core.presentation.common_composables.FormField
 import com.unique.schedify.core.presentation.common_composables.GradientButton
-import com.unique.schedify.core.presentation.common_composables.VisibilityCondition
+import com.unique.schedify.core.presentation.common_composables.LoadingUi
 import com.unique.schedify.core.presentation.utils.FormFieldType
 import com.unique.schedify.core.presentation.utils.size_units.dp16
+import com.unique.schedify.core.presentation.utils.size_units.dp40
+import com.unique.schedify.core.util.Resource
 import com.unique.schedify.post_auth.post_auth_utils.AddCollaboratorFields
-import com.unique.schedify.post_auth.post_auth_utils.OFFLINE
-import com.unique.schedify.post_auth.post_auth_utils.ONLINE
-import com.unique.schedify.post_auth.post_auth_utils.OfflinePaymentsOptions
-import com.unique.schedify.post_auth.post_auth_utils.OnlinePaymentsOptions
-import com.unique.schedify.post_auth.post_auth_utils.SETTLE_MEDIUM_OFFLINE
-import com.unique.schedify.post_auth.post_auth_utils.SETTLE_MEDIUM_ONLINE
+import com.unique.schedify.post_auth.post_auth_utils.CollaboratorAlterState
+import com.unique.schedify.post_auth.post_auth_utils.CollaboratorState
+import com.unique.schedify.post_auth.split_expense.data.remote.dto.CollaboratorRequestDto
+import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
+import com.unique.schedify.post_auth.split_expense.presentation.utils.prepareCollaboratorRequest
+import com.unique.schedify.pre_auth.presentation.Screen
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddCollaboratorScreen(
     navController: NavController,
+    grpItem: GroupExpenseResponseDto,
     viewModel: SplitExpenseViewModel
 ) {
     val formFields = remember { mutableStateOf(buildFormFields()) }
     val formResultedData = remember { mutableStateOf<Map<String, String>>(mapOf()) }
 
-    val isFormValid = formFields.value.all { field ->
-        val value = formResultedData.value[field.id]
-        val isVisible = field.visibleIf?.let {
-            formResultedData.value[it.fieldId]?.split(",")?.contains(it.expectedValue) == true
-        } ?: true
 
-        !isVisible || !field.isRequired || value?.isNotEmpty() == true
+
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 =  Unit) {
+        viewModel.resetCollaboratorState()
     }
 
     BaseCompose(
@@ -73,7 +93,7 @@ fun AddCollaboratorScreen(
                     formResultedData.value = formData
                 }
 
-                Spacer(modifier = Modifier.height(dp16))
+                Spacer(modifier = Modifier.height(dp40))
 
                 GradientButton(
                     text = stringResource(R.string.add),
@@ -82,12 +102,43 @@ fun AddCollaboratorScreen(
                     ),
                     enabled = isFormValid,
                     onClick = {
-                        // TODO
-                        formFields.value.forEach {
-                            println("${it.label} = ${it.value}")
+                        prepareCollaboratorRequest(
+                            value = formResultedData.value,
+                            grpItem = grpItem,
+                            alteringState = CollaboratorAlterState.CREATE
+                        ).let {
+                            request ->
+                            if(request != CollaboratorRequestDto.empty()) {
+                                viewModel.startCollaboratorChosenProcess(
+                                    collaboratorState = CollaboratorState.CREATE,
+                                    collaboratorRequestDto = request
+                                )
+                            }
                         }
                     }
                 )
+            }
+
+            if( viewModel.collaboratorCreateState.value is Resource.Loading) {
+                LoadingUi()
+            }
+
+            if(viewModel.collaboratorCreateState.value is Resource.Success &&
+                viewModel.getAllGroupDetails.value is Resource.Success) {
+                viewModel.resetAddCollaboratorState()
+                Toast.makeText(context, "Collaborator added successfully", Toast.LENGTH_SHORT).show()
+
+                navController.popBackStack(
+                    route = "${Screen.GroupDetailedScreen.route}/${URLEncoder.encode(Gson().toJson(grpItem), StandardCharsets.UTF_8.toString())}",
+                    inclusive = false
+                )
+            }
+
+            if(viewModel.collaboratorCreateState.value is Resource.Error &&
+                viewModel.getAllGroupDetails.value is Resource.Error) {
+                viewModel.resetAddCollaboratorState()
+                val errorDetails = viewModel.getAllGroupDetails.value
+                Toast.makeText(LocalContext.current, errorDetails.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -97,55 +148,11 @@ fun AddCollaboratorScreen(
 private fun buildFormFields(): List<FormField> {
     return listOf(
         FormField(
-            id = AddCollaboratorFields.COLLABORATOR_NAME.name,
-            label = AddCollaboratorFields.COLLABORATOR_NAME.description,
+            id = AddCollaboratorFields.COLLABORATOR_EMAIL_ID.name,
+            label = AddCollaboratorFields.COLLABORATOR_EMAIL_ID.description,
             type = FormFieldType.TEXT,
-            isRequired = true
-        ),
-        FormField(
-            id = AddCollaboratorFields.PAYMENT_QR_URL.name,
-            label = AddCollaboratorFields.PAYMENT_QR_URL.description,
-            type = FormFieldType.TEXT,
-            visibleIf = VisibilityCondition(SETTLE_MEDIUM_ONLINE, OnlinePaymentsOptions.UPI.description),
-            isRequired = true
-        ),
-        FormField(
-            id = AddCollaboratorFields.REDIRECT_UPI_URL.name,
-            label = AddCollaboratorFields.REDIRECT_UPI_URL.description,
-            type = FormFieldType.TEXT,
-            visibleIf = VisibilityCondition(SETTLE_MEDIUM_ONLINE, OnlinePaymentsOptions.UPI.description),
-            isRequired = true
-        ),
-        FormField(
-            id = AddCollaboratorFields.PREFERRED_SETTLE_MODE.name,
-            label = AddCollaboratorFields.PREFERRED_SETTLE_MODE.description,
-            type = FormFieldType.CHECKBOX,
-            options = listOf(OFFLINE, ONLINE),
-            isRequired = true
-        ),
-        FormField(
-            id = SETTLE_MEDIUM_ONLINE,
-            label = AddCollaboratorFields.PREFERRED_SETTLE_MEDIUM.description,
-            type = FormFieldType.CHECKBOX,
-            visibleIf = VisibilityCondition(AddCollaboratorFields.PREFERRED_SETTLE_MODE.name, ONLINE),
-            options = listOf(
-                OnlinePaymentsOptions.UPI.description,
-                OnlinePaymentsOptions.NET_BANKING.description,
-                OnlinePaymentsOptions.CREDIT_CARD.description,
-                OnlinePaymentsOptions.DEBIT_CARD.description,
-                OnlinePaymentsOptions.NEFT.description,
-                OnlinePaymentsOptions.RTGS.description,
-                OnlinePaymentsOptions.DRAFT.description,
-            ),
-            isRequired = true
-        ),
-        FormField(
-            id = SETTLE_MEDIUM_OFFLINE,
-            label = AddCollaboratorFields.PREFERRED_SETTLE_MEDIUM.description,
-            type = FormFieldType.CHECKBOX,
-            visibleIf = VisibilityCondition(AddCollaboratorFields.PREFERRED_SETTLE_MODE.name, OFFLINE),
-            options = listOf(OfflinePaymentsOptions.CASH.description, OfflinePaymentsOptions.BARTER.description),
             isRequired = true
         ),
     )
 }
+*/
