@@ -1,8 +1,8 @@
 package com.unique.schedify.core.network
 
 object Api {
-    const val BASE_URL = "http://10.0.2.2:8000"
-    //const val BASE_URL = "https://taskbreezeapi.pythonanywhere.com"
+    //const val BASE_URL = "http://10.0.2.2:8000"
+    const val BASE_URL = "https://taskbreezeapi.pythonanywhere.com"
     const val PRE_APP_DETAILS = "/api/pre/app-details"
 
     // Login APIS
