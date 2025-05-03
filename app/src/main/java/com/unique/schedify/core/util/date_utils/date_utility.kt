@@ -20,10 +20,10 @@ object DateUtility {
 }
 
 fun formattedServerDateTime(dateTime: String?): String {
-    return dateTime?.takeIf { it.isNotBlank() }?.let {
+    return dateTime?.split(".")?.firstOrNull()?.takeIf { it.isNotBlank() }?.let {
         runCatching {
             val inputFormat = SimpleDateFormat(DateFormat.FORMAT_SERVER_TIME.format, Locale.getDefault()).apply {
-                timeZone = TimeZone.getTimeZone("UTC")
+                timeZone = TimeZone.getDefault()
             }
             val outputFormat = SimpleDateFormat(DateFormat.FORMAT_MMM_DD_YYYY_HH_MM_AA.format, Locale.getDefault())
 

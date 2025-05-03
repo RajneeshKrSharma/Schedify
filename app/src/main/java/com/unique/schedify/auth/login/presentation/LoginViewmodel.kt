@@ -87,6 +87,8 @@ class LoginViewmodel @Inject constructor(
                     is ApiResponseResource.Error -> _loginViaOtpState.value = Resource.Error(this.errorMessage)
                     is ApiResponseResource.Success -> {
                         sharedPrefConfig.saveAuthToken(data.data?.authData?.key ?: "")
+                        sharedPrefConfig.saveAuthUserId(data.data?.authData?.user ?: -1)
+                        sharedPrefConfig.saveAuthUserEmailId(data.data?.emailId ?: "")
                         sharedPrefConfig.saveIsUserViaOtp(true)
                         _loginViaOtpState.value = Resource.Success(this.data)
                     }

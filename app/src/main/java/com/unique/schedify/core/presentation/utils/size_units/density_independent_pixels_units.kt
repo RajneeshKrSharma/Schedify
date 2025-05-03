@@ -2,6 +2,7 @@ package com.unique.schedify.core.presentation.utils.size_units
 
 import androidx.compose.ui.unit.dp
 
+val dp0 = 0.dp
 val dp1 = 1.dp
 val dp2 = 2.dp
 val dp3 = 3.dp

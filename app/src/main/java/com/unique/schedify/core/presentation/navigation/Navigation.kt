@@ -44,4 +44,18 @@ object Navigation {
             popUpTo(0) { inclusive = true }
         }
     }
+
+    fun navigateToScreenWithArgs(
+        navigateTo: AvailableScreens,
+        navController: NavController,
+        popUpToScreen: Screen,
+        args: Any
+    ) {
+
+        navController.navigate("${navigateTo.toScreen().route}/$args") {
+            popUpTo(popUpToScreen.route) {
+                inclusive = true
+            }
+        }
+    }
 }

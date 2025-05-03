@@ -1,5 +1,6 @@
 package com.unique.schedify.core.presentation.common_composables
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,7 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Checkbox
@@ -31,9 +32,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import com.unique.schedify.R
 import com.unique.schedify.core.presentation.utils.FormFieldType
 import com.unique.schedify.core.presentation.utils.size_units.dp12
 import com.unique.schedify.core.presentation.utils.size_units.dp16
+import com.unique.schedify.core.util.isEmailValid
 
 data class VisibilityCondition(
     val fieldId: String,
@@ -78,7 +83,7 @@ fun FormBuilder(
         onFormChanged(formState.toMap())
     }
 
-    Column(modifier = Modifier.padding(dp16)) {
+    Column {
         fields.forEach { field ->
             val isVisible = field.visibleIf?.let {
                 formState[it.fieldId]?.split(",")?.contains(it.expectedValue) == true
@@ -93,12 +98,73 @@ fun FormBuilder(
             when (field.type) {
                 FormFieldType.TEXT -> {
                     OutlinedTextField(
+                        singleLine = true,
+                        minLines = 1,
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text
+                        ),
                         value = formState[field.id] ?: "",
                         onValueChange = { updateField(field.id, it) },
                         label = { RequiredLabel(field.label, isActuallyRequired) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = MaterialTheme.colorScheme.onTertiary,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+                            errorIndicatorColor = MaterialTheme.colorScheme.secondary,
+                            cursorColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+
+                FormFieldType.EMAIL -> {
+                    OutlinedTextField(
+                        singleLine = true,
+                        minLines = 1,
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text
+                        ),
+                        value = formState[field.id] ?: "",
+                        onValueChange = { updateField(field.id, it) },
+                        label = { RequiredLabel(field.label, isActuallyRequired) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+                            errorIndicatorColor = MaterialTheme.colorScheme.secondary,
+                            cursorColor = MaterialTheme.colorScheme.primary
+                        ),
+                        supportingText = {
+                            if (formState[field.id]?.isNotEmpty() == true && formState[field.id]?.isEmailValid() == false) {
+                                Text(
+                                    stringResource(R.string.invalid_email_format),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+
+                FormFieldType.NUMBER -> {
+                    OutlinedTextField(
+                        singleLine = true,
+                        minLines = 1,
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        value = formState[field.id] ?: "",
+                        onValueChange = { updateField(field.id, it) },
+                        label = { RequiredLabel(field.label, isActuallyRequired) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                             unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -110,15 +176,16 @@ fun FormBuilder(
                 }
 
                 FormFieldType.CHECKBOX -> {
+                    val selectedOptions = remember(formState[field.id]) {
+                        (formState[field.id] ?: "")
+                            .split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+                            .toMutableStateList()
+                    }
+
                     Column {
                         RequiredLabel(field.label, isActuallyRequired)
-                        val selectedOptions = remember(formState[field.id]) {
-                            (formState[field.id] ?: "")
-                                .split(",")
-                                .map { it.trim() }
-                                .filter { it.isNotEmpty() }
-                                .toMutableStateList()
-                        }
 
                         field.options?.forEach { option ->
                             val isChecked = selectedOptions.contains(option)
@@ -133,6 +200,8 @@ fun FormBuilder(
                                         } else {
                                             selectedOptions.remove(option)
                                         }
+
+                                        // ✅ Always update as comma-separated string in formState
                                         updateField(field.id, selectedOptions.joinToString(","))
                                     },
                                     colors = CheckboxDefaults.colors(

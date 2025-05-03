@@ -4,14 +4,14 @@ import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseR
 import com.unique.schedify.post_auth.split_expense.domain.repository.SplitExpenseRepository
 import com.unique.schedify.core.ApiUseCase
 import com.unique.schedify.core.util.ApiResponseResource
-import com.unique.schedify.core.util.Resource
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupRequestDto
+import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupUpdateDeleteRequestPostData
 import javax.inject.Inject
 
 class GetGroupExpenseUseCase @Inject constructor(
     private val repository: SplitExpenseRepository,
-    ):ApiUseCase<ApiResponseResource<GroupExpenseResponseDto>, Unit> {
-    override suspend fun execute(args: Unit?): ApiResponseResource<GroupExpenseResponseDto> {
+    ):ApiUseCase<ApiResponseResource<List<GroupExpenseResponseDto>>, Unit> {
+    override suspend fun execute(args: Unit?): ApiResponseResource<List<GroupExpenseResponseDto>> {
         val result = repository.getGroupExpense()
         return (if (result.isSuccessful) {
             result.body()?.let { data ->
@@ -26,10 +26,58 @@ class GetGroupExpenseUseCase @Inject constructor(
 
 class SaveGroupUseCase @Inject constructor(
     private val repository: SplitExpenseRepository,
-):ApiUseCase<ApiResponseResource<GroupExpenseResponseDto>, GroupRequestDto> {
-    override suspend fun execute(args: GroupRequestDto?): ApiResponseResource<GroupExpenseResponseDto> {
+):ApiUseCase<ApiResponseResource<List<GroupExpenseResponseDto>>, GroupRequestDto> {
+    override suspend fun execute(args: GroupRequestDto?): ApiResponseResource<List<GroupExpenseResponseDto>> {
         return (args?.let {
             val result = repository.saveGroup(groupRequestDto = args)
+            (if (result.isSuccessful) {
+                result.body()?.let { data ->
+                    ApiResponseResource.Success(data)
+                } ?: ApiResponseResource.Error("")
+
+            } else {
+                ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
+            })
+
+        } ?: ApiResponseResource.Error("Invalid req.") )
+    }
+}
+
+class UpdateGroupUseCase @Inject constructor(
+    private val repository: SplitExpenseRepository,
+): ApiUseCase<ApiResponseResource<Any>, GroupUpdateDeleteRequestPostData> {
+    override suspend fun execute(args: GroupUpdateDeleteRequestPostData?): ApiResponseResource<Any> {
+        return (args?.let {
+
+            args.id?.let { groupId ->
+                args.groupRequestData?.let { groupRequest ->
+                    (groupId to groupRequest)
+                }
+            }?.let { (groupId, groupRequest) ->
+                val result = repository.updateGroup(
+                    groupId = groupId,
+                    groupRequestDto = groupRequest)
+                (if (result.isSuccessful) {
+                    result.body()?.let { data ->
+                        ApiResponseResource.Success(data)
+                    } ?: ApiResponseResource.Error("")
+
+                } else {
+                    ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
+                })
+            } ?: ApiResponseResource.Error("Invalid req.")
+
+        } ?: ApiResponseResource.Error("Invalid req.") )
+    }
+}
+
+class DeleteGroupUseCase @Inject constructor(
+    private val repository: SplitExpenseRepository,
+): ApiUseCase<ApiResponseResource<Any>, Int> {
+    override suspend fun execute(args: Int?): ApiResponseResource<Any> {
+        return (args?.let {
+            val result = repository.deleteGroup(
+                groupId = args)
             (if (result.isSuccessful) {
                 result.body()?.let { data ->
                     ApiResponseResource.Success(data)
