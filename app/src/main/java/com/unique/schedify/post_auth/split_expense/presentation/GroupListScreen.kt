@@ -92,6 +92,7 @@ fun GroupListScreen(
 
     SplitListScreen(
         appBarText = stringResource(R.string.groups),
+        navController = navController,
         appBarActions = {
             stateGroupDetails.data?.takeIf { data -> data.isNotEmpty() }?.let {
                 GroupTopBarActions(

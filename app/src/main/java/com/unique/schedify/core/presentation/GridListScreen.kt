@@ -32,7 +32,8 @@ abstract class GridListScreen {
     ) {
         BaseCompose(
             topBar = topAppBar,
-            modifier = modifier
+            modifier = modifier,
+            navController = navController
         ) {
             Column(
                 modifier = columnModifier
