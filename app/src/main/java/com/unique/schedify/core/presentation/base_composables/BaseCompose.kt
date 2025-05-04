@@ -19,15 +19,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.unique.schedify.R
+import com.unique.schedify.core.network.utility.NetworkErrorEmitter
+import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp2
+import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
+import com.unique.schedify.post_auth.home.presentation.HomeViewmodel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +48,7 @@ fun BaseCompose(
     bottomBar: @Composable (() -> Unit)? = null,
     contentModifier: Modifier = Modifier,
     stripModifier: Modifier = Modifier,
+    navController: NavController,
     content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) {
     // Observe the connectivity state using collectAsState
@@ -101,6 +108,31 @@ fun BaseCompose(
             }
         }
     )
+
+    ObserveGlobalNetworkErrors(
+        navController = navController
+    )
+}
+
+@Composable
+fun ObserveGlobalNetworkErrors(
+    navController: NavController,
+    homeViewModel: HomeViewmodel = hiltViewModel()
+) {
+    LaunchedEffect(Unit) {
+        NetworkErrorEmitter.networkErrors.collect { errorCode ->
+            when (errorCode) {
+                401 -> {
+                    homeViewModel.logout()
+                    Navigation.navigateAndClearBackStackScreen(
+                        navigateTo = AvailableScreens.PreAuth.PreAuthScreen,
+                        navController = navController
+                    )
+                }
+                else -> {}
+            }
+        }
+    }
 }
 
 

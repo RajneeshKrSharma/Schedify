@@ -13,15 +13,7 @@ class OAuthAccessTokenUseCase @Inject constructor(
 
     override suspend fun execute(args: OAuthAccessTokenRequestDto?): ApiResponseResource<OAuthAccessTokenResponseDto> {
         return (if (args != null) {
-            val result = repository.oAuthAccessToken((args))
-            if (result.isSuccessful) {
-                result.body()?.let { data ->
-                    ApiResponseResource.Success(data)
-                } ?: ApiResponseResource.Error("")
-
-            } else {
-                ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-            }
+            catchWrapper { repository.oAuthAccessToken((args)) }
         } else {
             ApiResponseResource.Error("Invalid req.")
         })

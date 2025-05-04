@@ -122,6 +122,7 @@ fun LoadCollaboratorScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         SplitListScreen(
             appBarText = stringResource(R.string.collaborators),
+            navController = navController,
             appBarActions = {
                 CollaboratorTopBarActions(
                     addCollaboratorButtonClicked = {

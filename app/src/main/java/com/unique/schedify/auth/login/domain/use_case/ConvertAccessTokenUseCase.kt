@@ -13,15 +13,7 @@ class ConvertAccessTokenUseCase @Inject constructor(
 
     override suspend fun execute(args: ConvertAccessTokenRequestDto?): ApiResponseResource<ConvertAccessTokenResponseDto> {
         return (if (args != null) {
-            val result = repository.convertAccessToken(args)
-            if (result.isSuccessful) {
-                result.body()?.let { data ->
-                    ApiResponseResource.Success(data)
-                } ?: ApiResponseResource.Error("")
-
-            } else {
-                ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-            }
+            return catchWrapper { repository.convertAccessToken(args) }
         } else {
             ApiResponseResource.Error("Invalid req.")
         })
