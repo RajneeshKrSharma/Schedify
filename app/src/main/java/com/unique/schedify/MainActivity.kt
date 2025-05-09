@@ -1,6 +1,8 @@
 package com.unique.schedify
 
 import android.Manifest.permission.POST_NOTIFICATIONS
+import android.net.Uri
+import android.os.Build
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
