@@ -1,13 +1,11 @@
 package com.unique.schedify
 
-import android.Manifest.permission.POST_NOTIFICATIONS
 import android.net.Uri
 import android.os.Build
+import android.Manifest.permission.POST_NOTIFICATIONS
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -182,10 +180,45 @@ class MainActivity : ComponentActivity() {
                             locationType = locationType
                         )
                     }
+                        val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
+                        SimpleScheduleListScreen(navController = navController,
+                            scheduleViewModel
+                        )
 
-                }
-            }
-        }
+                    }
+
+                    composable(
+                        route = "schedule_detail/{item}",
+                        arguments = listOf(navArgument("item") { type = NavType.StringType }) // ✅ Ensure it's treated as a string
+                    ) { backStackEntry ->
+                        val json = backStackEntry.arguments?.getString("item") ?: return@composable
+                        val scheduleItem = Gson().fromJson(Uri.decode(json), ScheduleListResponseDto.Data::class.java) // ✅ Decode safely
+
+                        ScheduleDetailScreen(
+                            item = scheduleItem,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(
+                        route = "add_schedule?locationType={locationType}",
+                        arguments = listOf(
+                            navArgument("locationType") { defaultValue = "current" },
+                        )
+                    ) { backStackEntry ->
+
+                        val locationType = backStackEntry.arguments?.getString("locationType") ?: "new"
+                        val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
+
+                        Log.i("TaG", "onCreate: ----------->${backStackEntry.arguments?.getString("locationType")}")
+                        AddScheduleScreen(
+                            navController,
+                            scheduleViewModel,
+                            locationType = locationType
+                        )
+                    }
+
+                }}
     }
 
     override fun onResume() {
