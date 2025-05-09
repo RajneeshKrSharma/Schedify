@@ -22,6 +22,7 @@ import com.unique.schedify.post_auth.post_auth_utils.SplitScheduleListMoreOption
 @Composable
 fun SplitListScreen(
     appBarText: String,
+    navController: NavController,
     appBarActions: @Composable (RowScope.() -> Unit)? = null,
     content: @Composable (() -> Unit)
 ) {
@@ -37,7 +38,8 @@ fun SplitListScreen(
                 modifier = Modifier.padding(dp16),
                 actions = { appBarActions?.invoke(this) }
             )
-        }
+        },
+        navController = navController
     ) {
         Box(
             modifier = Modifier

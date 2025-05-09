@@ -13,15 +13,7 @@ class RequestOtpUseCase @Inject constructor(
 
     override suspend fun execute(args: GetOtpRequestDto?): ApiResponseResource<GetOtpResponseDto> {
         return (if (args != null) {
-            val result = repository.requestOtp((args))
-            if (result.isSuccessful) {
-                result.body()?.let { data ->
-                    ApiResponseResource.Success(data)
-                } ?: ApiResponseResource.Error("")
-
-            } else {
-                ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-            }
+            return catchWrapper {repository.requestOtp((args))}
         } else {
             ApiResponseResource.Error("Invalid req.")
         })

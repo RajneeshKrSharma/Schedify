@@ -12,16 +12,10 @@ class SaveExpenseUseCase @Inject constructor(
 ): ApiUseCase<ApiResponseResource<Any>, ExpenseRequestDto> {
     override suspend fun execute(args: ExpenseRequestDto?): ApiResponseResource<Any> {
         return (args?.let {
-            val result = repository.saveExpense(
-                expenseRequestDto = args)
-            (if (result.isSuccessful) {
-                result.body()?.let { data ->
-                    ApiResponseResource.Success(data)
-                } ?: ApiResponseResource.Error("")
-
-            } else {
-                ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-            })
+            catchWrapper {
+                repository.saveExpense(
+                    expenseRequestDto = args)
+            }
 
         } ?: ApiResponseResource.Error("Invalid req.") )
     }
@@ -32,24 +26,18 @@ class UpdateExpenseUseCase @Inject constructor(
 ): ApiUseCase<ApiResponseResource<Any>, ExpenseUpdateDeleteRequestPostData> {
     override suspend fun execute(args: ExpenseUpdateDeleteRequestPostData?): ApiResponseResource<Any> {
         return (args?.let {
-
             args.id?.let { expenseId ->
                 args.expenseRequestData?.let { expenseRequest ->
                     (expenseId to expenseRequest)
                 }
             }?.let { (expenseId, expenseRequest) ->
-                val result = repository.updateExpense(
-                    expenseId = expenseId,
-                    expenseRequestDto = expenseRequest)
-                (if (result.isSuccessful) {
-                    result.body()?.let { data ->
-                        ApiResponseResource.Success(data)
-                    } ?: ApiResponseResource.Error("")
-
-                } else {
-                    ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-                })
-            } ?: ApiResponseResource.Error("Invalid req.")
+                catchWrapper {
+                    repository.updateExpense(
+                        expenseId = expenseId,
+                        expenseRequestDto = expenseRequest
+                    )
+                }
+            }
 
         } ?: ApiResponseResource.Error("Invalid req.") )
     }
@@ -60,17 +48,8 @@ class DeleteExpenseUseCase @Inject constructor(
 ): ApiUseCase<ApiResponseResource<Any>, Int> {
     override suspend fun execute(args: Int?): ApiResponseResource<Any> {
         return (args?.let {
-            val result = repository.deleteExpense(
-                expenseId = args)
-            (if (result.isSuccessful) {
-                result.body()?.let { data ->
-                    ApiResponseResource.Success(data)
-                } ?: ApiResponseResource.Error("")
-
-            } else {
-                ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-            })
-
+            catchWrapper { repository.deleteExpense(
+                expenseId = args) }
         } ?: ApiResponseResource.Error("Invalid req.") )
     }
 }
