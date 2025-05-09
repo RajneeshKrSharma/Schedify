@@ -124,6 +124,7 @@ fun ExpenseScreen(
     val coroutine = rememberCoroutineScope()
 
     BaseCompose(
+        navController = navController,
         topBar = {
             TopAppBar(
                 title = {

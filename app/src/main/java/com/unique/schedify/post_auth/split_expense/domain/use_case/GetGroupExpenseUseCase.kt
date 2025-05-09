@@ -12,15 +12,7 @@ class GetGroupExpenseUseCase @Inject constructor(
     private val repository: SplitExpenseRepository,
     ):ApiUseCase<ApiResponseResource<List<GroupExpenseResponseDto>>, Unit> {
     override suspend fun execute(args: Unit?): ApiResponseResource<List<GroupExpenseResponseDto>> {
-        val result = repository.getGroupExpense()
-        return (if (result.isSuccessful) {
-            result.body()?.let { data ->
-                ApiResponseResource.Success(data)
-            } ?: ApiResponseResource.Error("")
-
-        } else {
-            ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-        })
+        return catchWrapper { repository.getGroupExpense() }
     }
 }
 
@@ -29,16 +21,7 @@ class SaveGroupUseCase @Inject constructor(
 ):ApiUseCase<ApiResponseResource<List<GroupExpenseResponseDto>>, GroupRequestDto> {
     override suspend fun execute(args: GroupRequestDto?): ApiResponseResource<List<GroupExpenseResponseDto>> {
         return (args?.let {
-            val result = repository.saveGroup(groupRequestDto = args)
-            (if (result.isSuccessful) {
-                result.body()?.let { data ->
-                    ApiResponseResource.Success(data)
-                } ?: ApiResponseResource.Error("")
-
-            } else {
-                ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-            })
-
+            catchWrapper { repository.saveGroup(groupRequestDto = args) }
         } ?: ApiResponseResource.Error("Invalid req.") )
     }
 }
@@ -48,23 +31,14 @@ class UpdateGroupUseCase @Inject constructor(
 ): ApiUseCase<ApiResponseResource<Any>, GroupUpdateDeleteRequestPostData> {
     override suspend fun execute(args: GroupUpdateDeleteRequestPostData?): ApiResponseResource<Any> {
         return (args?.let {
-
             args.id?.let { groupId ->
                 args.groupRequestData?.let { groupRequest ->
                     (groupId to groupRequest)
                 }
             }?.let { (groupId, groupRequest) ->
-                val result = repository.updateGroup(
+                catchWrapper { repository.updateGroup(
                     groupId = groupId,
-                    groupRequestDto = groupRequest)
-                (if (result.isSuccessful) {
-                    result.body()?.let { data ->
-                        ApiResponseResource.Success(data)
-                    } ?: ApiResponseResource.Error("")
-
-                } else {
-                    ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-                })
+                    groupRequestDto = groupRequest) }
             } ?: ApiResponseResource.Error("Invalid req.")
 
         } ?: ApiResponseResource.Error("Invalid req.") )
@@ -76,17 +50,8 @@ class DeleteGroupUseCase @Inject constructor(
 ): ApiUseCase<ApiResponseResource<Any>, Int> {
     override suspend fun execute(args: Int?): ApiResponseResource<Any> {
         return (args?.let {
-            val result = repository.deleteGroup(
-                groupId = args)
-            (if (result.isSuccessful) {
-                result.body()?.let { data ->
-                    ApiResponseResource.Success(data)
-                } ?: ApiResponseResource.Error("")
-
-            } else {
-                ApiResponseResource.Error(result.errorBody()?.string() ?: "Something went wrong with error body")
-            })
-
+            catchWrapper { repository.deleteGroup(
+                groupId = args) }
         } ?: ApiResponseResource.Error("Invalid req.") )
     }
 }
