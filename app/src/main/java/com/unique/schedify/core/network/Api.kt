@@ -16,4 +16,8 @@ object Api {
     const val COLLABORATOR = "api/list/collaborators"
     const val EXPENSE = "api/list/expenses"
 
+    const val SCHEDULE_LIST = "api/schedule-list/schedule-items"
+    const val UPLOAD_ATTACHMENTS = "api/schedule-list/schedule-items/upload-attachments"
+    const val PIN_CODE_VERIFY = "https://api.postalpincode.in/pincode/"
+
 }

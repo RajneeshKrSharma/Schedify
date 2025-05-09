@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.remember
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -30,6 +31,11 @@ import com.unique.schedify.auth.login.presentation.OtpInputScreen
 import com.unique.schedify.core.presentation.utils.GROUP_GRAPH_NAME
 import com.unique.schedify.core.presentation.utils.LOGIN_GRAPH_NAME
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
+import com.unique.schedify.post_auth.schedule_list.data.remote.dto.ScheduleListResponseDto
+import com.unique.schedify.post_auth.schedule_list.presentation.AddScheduleScreen
+import com.unique.schedify.post_auth.schedule_list.presentation.ScheduleDetailScreen
+import com.unique.schedify.post_auth.schedule_list.presentation.SimpleScheduleListScreen
+import com.unique.schedify.post_auth.schedule_list.presentation.SimpleScheduleListViewModel
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
 import com.unique.schedify.post_auth.split_expense.presentation.ExpenseScreen
 import com.unique.schedify.post_auth.split_expense.presentation.GroupListScreen
@@ -47,6 +53,7 @@ import java.nio.charset.StandardCharsets
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -136,8 +143,44 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = Screen.SimpleScheduleList.route) {
+                        val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
+                        SimpleScheduleListScreen(navController = navController,
+                            scheduleViewModel
+                        )
 
                     }
+
+                    composable(
+                        route = "schedule_detail/{item}",
+                        arguments = listOf(navArgument("item") { type = NavType.StringType }) // ✅ Ensure it's treated as a string
+                    ) { backStackEntry ->
+                        val json = backStackEntry.arguments?.getString("item") ?: return@composable
+                        val scheduleItem = Gson().fromJson(Uri.decode(json), ScheduleListResponseDto.Data::class.java) // ✅ Decode safely
+
+                        ScheduleDetailScreen(
+                            item = scheduleItem,
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(
+                        route = "add_schedule?locationType={locationType}",
+                        arguments = listOf(
+                            navArgument("locationType") { defaultValue = "current" },
+                        )
+                    ) { backStackEntry ->
+
+                        val locationType = backStackEntry.arguments?.getString("locationType") ?: "new"
+                        val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
+
+                        Log.i("TaG", "onCreate: ----------->${backStackEntry.arguments?.getString("locationType")}")
+                        AddScheduleScreen(
+                            navController,
+                            scheduleViewModel,
+                            locationType = locationType
+                        )
+                    }
+
                 }
             }
         }
