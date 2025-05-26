@@ -67,4 +67,7 @@
     <string name="group_deleted_successfully">Group Deleted Successfully</string>
     <string name="group_updated_successfully">Group Updated Successfully</string>
     <string name="collaborator_created_successfully">Collaborator Created Successfully</string>
+    <string name="enter_email">Enter emailId</string>
+    <string name="get_otp">Get Otp</string>
+    <string name="enter_valid_email">Enter valid email</string>
 </resources>
