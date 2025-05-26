@@ -20,12 +20,9 @@ fun SquareBoundaryProgressBar(
     modifier: Modifier = Modifier,
     progressTime: Int
 ) {
-    val gradientColors = listOf(
-        MaterialTheme.colorScheme.secondary,
-        MaterialTheme.colorScheme.tertiary,
-    )
+    val color = MaterialTheme.colorScheme.secondary
 
-    val progress = remember { Animatable(0.1f) }
+    val progress = remember { Animatable(0.0f) }
 
     LaunchedEffect(Unit) {
         progress.animateTo(
@@ -35,32 +32,32 @@ fun SquareBoundaryProgressBar(
     }
 
     Canvas(modifier = modifier) {
-        val size = size.width
+        val canvasSize = size.minDimension
         val strokeWidth = 12f
 
         val path = Path().apply {
-            moveTo(0f, 0f)
-            lineTo(size, 0f)
-            lineTo(size, size)
-            lineTo(0f, size)
-            close()
+            moveTo(0f, 0f)                    // Top-left
+            lineTo(canvasSize, 0f)           // Top-right
+            lineTo(canvasSize, canvasSize)   // Bottom-right
+            lineTo(0f, canvasSize)           // Bottom-left
+            close()                          // Back to top-left
         }
 
-        val pathLength = size * 4
-        val dashLength = pathLength * progress.value
+        val totalLength = 4 * canvasSize
+        val animatedLength = totalLength * progress.value
 
         val pathEffect = PathEffect.dashPathEffect(
-            floatArrayOf(dashLength, pathLength - dashLength),
-            0f
+            floatArrayOf(animatedLength, totalLength),
+            0f // phase
         )
 
         drawPath(
             path = path,
-            brush = Brush.sweepGradient(gradientColors),
+            color = color,
             style = Stroke(
                 width = strokeWidth,
-                cap = StrokeCap.Butt,
-                pathEffect = pathEffect
+                pathEffect = pathEffect,
+                cap = StrokeCap.Butt
             )
         )
     }

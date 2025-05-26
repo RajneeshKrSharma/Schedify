@@ -15,6 +15,7 @@ sealed class AvailableScreens {
         data object PreAuthScreen : PreAuth()
         data object LoginScreen : PreAuth()
         data object SplashScreen : PreAuth()
+        data object OtpInputScreen : PreAuth()
     }
 }
 
@@ -28,4 +29,5 @@ fun AvailableScreens.toScreen(): Screen = when (this) {
     AvailableScreens.PreAuth.LoginScreen -> Screen.LoginScreen
     AvailableScreens.PreAuth.SplashScreen -> Screen.SplashScreen
     AvailableScreens.PostAuth.ExpenseScreen -> Screen.ExpenseScreen
+    AvailableScreens.PreAuth.OtpInputScreen -> Screen.OtpInputScreen
 }
