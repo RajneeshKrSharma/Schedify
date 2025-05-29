@@ -38,6 +38,7 @@ import com.unique.schedify.core.presentation.common_composables.LoadingUi
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp8
+import com.unique.schedify.core.presentation.utils.size_units.sp20
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.core.util.Resource
 import com.unique.schedify.core.util.isEmailValid
@@ -210,6 +211,10 @@ fun EmailInputFieldUi(
             modifier = Modifier
                 .fillMaxWidth(),
             enabled = loginViewmodel.getOtpState.value !is Resource.Success,
+            textStyle = MaterialTheme.typography.labelMedium.copy(
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = sp20
+            ),
             supportingText = {
                 if (emailIdState.value.isNotEmpty() && emailIdState.value.isEmailValid().not()) {
                     Text(

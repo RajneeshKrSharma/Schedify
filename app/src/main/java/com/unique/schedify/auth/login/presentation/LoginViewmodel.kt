@@ -91,7 +91,11 @@ class LoginViewmodel @Inject constructor(
     fun loginViaOtp(loginRequest: LoginViaOtpRequestDto) {
         viewModelScope.launch {
             _loginViaOtpState.value = Resource.Loading()
-            with(loginViaOtpUseCase.execute(loginRequest)) {
+            with(loginViaOtpUseCase.execute(
+                sharedPrefConfig.getFcmToken()?.let { fcmToken ->
+                    loginRequest.copy(fcmToken = fcmToken)
+                } ?: loginRequest)
+            ) {
                 when (this) {
                     is ApiResponseResource.Error -> _loginViaOtpState.value = Resource.Error(this.errorMessage)
                     is ApiResponseResource.Success -> {
