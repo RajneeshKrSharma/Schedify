@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.parcelize)
 }
@@ -12,6 +13,10 @@ android {
     compileSdk = 35
 
     val mySecretKey: String = project.findProperty("SECRET_DECRYPT_KEY") as? String ?: "default_value"
+    val fAppKey: String = project.findProperty("FIREBASE_API_KEY") as? String ?: "default_value"
+    val fAppId: String = project.findProperty("FIREBASE_APP_ID") as? String ?: "default_value"
+    val fProjectId: String = project.findProperty("FIREBASE_PROJECT_ID") as? String ?: "default_value"
+    val fStorageBucket: String = project.findProperty("FIREBASE_STORAGE_BUCKET") as? String ?: "default_value"
 
     defaultConfig {
         applicationId = "com.unique.schedify"
@@ -23,6 +28,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "DECRYPT_KEY", mySecretKey)
+        buildConfigField("String", "FIREBASE_APP_KEY", fAppKey)
+        buildConfigField("String", "FIREBASE_APP_ID", fAppId)
+        buildConfigField("String", "FIREBASE_PROJECT_ID", fProjectId)
+        buildConfigField("String", "FIREBASE_STORAGE_BUCKET", fStorageBucket)
     }
 
     buildTypes {
@@ -91,4 +100,11 @@ dependencies {
     implementation(libs.play.services.auth)
 
     implementation(libs.androidx.material)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.firestore)
 }

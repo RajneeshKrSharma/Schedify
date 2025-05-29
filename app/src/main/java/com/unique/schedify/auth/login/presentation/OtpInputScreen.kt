@@ -40,6 +40,9 @@ import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp60
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp16
+import com.unique.schedify.core.presentation.utils.size_units.sp28
+import com.unique.schedify.core.presentation.utils.size_units.sp36
+import com.unique.schedify.core.presentation.utils.size_units.sp48
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.core.util.MaxOtpField
 import com.unique.schedify.core.util.OtpExpiryInfo
@@ -167,8 +170,9 @@ fun OtpInputFieldsUi(
                         modifier = Modifier
                             .width(dp60)
                             .height(dp60),
-                        textStyle = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.primary
+                        textStyle = MaterialTheme.typography.labelMedium.copy(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = sp28
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true
@@ -227,6 +231,6 @@ private fun OtpTimerUi(
     Text(
         modifier = Modifier.padding(bottom = dp16, top = dp8),
         text = stringResource(R.string.otp_will_expired_in_sec, timerState.intValue),
-        fontSize = sp16, color = MaterialTheme.colorScheme.tertiary
+        fontSize = sp16, color = MaterialTheme.colorScheme.secondary
     )
 }
