@@ -317,7 +317,9 @@ fun CollaboratorDetailsUi(
                 groupItem = grpItem
             )
 
-            DashedDivider()
+            DashedDivider(
+                dividerModifier = Modifier.fillMaxWidth()
+            )
 
             // Prepare collaborator ui
             grpItem.collaborators?.sortedBy { it?.collabUserId != splitExpenseViewModel.getAuthUserId() }

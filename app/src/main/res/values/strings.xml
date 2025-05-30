@@ -17,7 +17,7 @@
     <string name="login_via_google">Login via Google</string>
     <string name="login_via_otp">Login Via OTP</string>
     <string name="request_otp">Request OTP</string>
-    <string name="let_s_login">Let\'s Login . .</string>
+    <string name="let_s_login">Let\'s get you IN !</string>
     <string name="email_id">Email Id</string>
     <string name="invalid_email_format">Invalid email format</string>
     <string name="ok">OK</string>
@@ -71,4 +71,6 @@
     <string name="enter_email">Enter emailId</string>
     <string name="get_otp">Get Otp</string>
     <string name="enter_valid_email">Enter valid email</string>
+    <string name="let_s_get_you">"Let's get you in Schedify"</string>
+    <string name="guest">Hi Guest, </string>
 </resources>
