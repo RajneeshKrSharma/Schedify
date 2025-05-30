@@ -4,9 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
 
     <application
         android:name=".SchedifyApplication"
@@ -30,6 +28,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--<provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove">
+        </provider>-->
         <provider
             android:name="com.google.firebase.provider.FirebaseInitProvider"
             android:authorities="${applicationId}.firebaseinitprovider"
@@ -44,6 +48,11 @@
             </intent-filter>
         </service>
 
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove">
+        </provider>
     </application>
 
 </manifest>

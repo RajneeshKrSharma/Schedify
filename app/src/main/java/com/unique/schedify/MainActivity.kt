@@ -78,13 +78,20 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(navController = navController)
                     }
 
-                    navigation(startDestination = Screen.LoginScreen.route, route = LOGIN_GRAPH_NAME) {
+                    navigation(
+                        startDestination = Screen.LoginScreen.route,
+                        route = LOGIN_GRAPH_NAME
+                    ) {
                         composable(Screen.LoginScreen.route) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(LOGIN_GRAPH_NAME)
                             }
                             val loginViewmodel: LoginViewmodel = hiltViewModel(parentEntry)
-                            LoginScreen(loginViewmodel, context = this@MainActivity, navController = navController)
+                            LoginScreen(
+                                loginViewmodel,
+                                context = this@MainActivity,
+                                navController = navController
+                            )
                         }
 
                         composable(
@@ -98,42 +105,66 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    navigation(startDestination = Screen.GroupListScreen.route, route = GROUP_GRAPH_NAME) {
+                    navigation(
+                        startDestination = Screen.GroupListScreen.route,
+                        route = GROUP_GRAPH_NAME
+                    ) {
                         composable(Screen.GroupListScreen.route) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
-                            val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry)
+                            val splitExpenseViewModel: SplitExpenseViewModel =
+                                hiltViewModel(parentEntry)
                             GroupListScreen(navController, splitExpenseViewModel)
                         }
 
                         composable(
                             route = "${Screen.GroupDetailedScreen.route}/{groupJson}",
-                            arguments = listOf(navArgument("groupJson") { type = NavType.StringType })
+                            arguments = listOf(navArgument("groupJson") {
+                                type = NavType.StringType
+                            })
                         ) { backStackEntry ->
 
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
-                            val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry) // Shared ViewModel
+                            val splitExpenseViewModel: SplitExpenseViewModel =
+                                hiltViewModel(parentEntry) // Shared ViewModel
 
-                            val groupJsonEncoded = backStackEntry.arguments?.getString("groupJson") ?: return@composable
-                            val groupJson = URLDecoder.decode(groupJsonEncoded, StandardCharsets.UTF_8.toString())
-                            val groupItem = Gson().fromJson(groupJson, GroupExpenseResponseDto::class.java)
+                            val groupJsonEncoded = backStackEntry.arguments?.getString("groupJson")
+                                ?: return@composable
+                            val groupJson = URLDecoder.decode(
+                                groupJsonEncoded,
+                                StandardCharsets.UTF_8.toString()
+                            )
+                            val groupItem =
+                                Gson().fromJson(groupJson, GroupExpenseResponseDto::class.java)
 
                             LoadCollaboratorScreen(navController, groupItem, splitExpenseViewModel)
                         }
 
                         composable(
                             route = "${Screen.ExpenseScreen.route}/{collaboratorJson}",
-                            arguments = listOf(navArgument("collaboratorJson") { type = NavType.StringType })) { backStackEntry ->
+                            arguments = listOf(navArgument("collaboratorJson") {
+                                type = NavType.StringType
+                            })
+                        ) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
-                            val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry)
-                            val collaboratorJsonEncoded = backStackEntry.arguments?.getString("collaboratorJson") ?: return@composable
-                            val collaboratorJsonDecoded = URLDecoder.decode(collaboratorJsonEncoded, StandardCharsets.UTF_8.toString())
-                            val collaboratorItem = Gson().fromJson(collaboratorJsonDecoded, GroupExpenseResponseDto.Collaborator::class.java)
+                            val splitExpenseViewModel: SplitExpenseViewModel =
+                                hiltViewModel(parentEntry)
+                            val collaboratorJsonEncoded =
+                                backStackEntry.arguments?.getString("collaboratorJson")
+                                    ?: return@composable
+                            val collaboratorJsonDecoded = URLDecoder.decode(
+                                collaboratorJsonEncoded,
+                                StandardCharsets.UTF_8.toString()
+                            )
+                            val collaboratorItem = Gson().fromJson(
+                                collaboratorJsonDecoded,
+                                GroupExpenseResponseDto.Collaborator::class.java
+                            )
                             ExpenseScreen(
                                 navController = navController,
                                 collaborator = collaboratorItem,
@@ -144,7 +175,8 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.SimpleScheduleList.route) {
                         val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
-                        SimpleScheduleListScreen(navController = navController,
+                        SimpleScheduleListScreen(
+                            navController = navController,
                             scheduleViewModel
                         )
 
@@ -152,10 +184,15 @@ class MainActivity : ComponentActivity() {
 
                     composable(
                         route = "schedule_detail/{item}",
-                        arguments = listOf(navArgument("item") { type = NavType.StringType }) // ✅ Ensure it's treated as a string
+                        arguments = listOf(navArgument("item") {
+                            type = NavType.StringType
+                        }) // ✅ Ensure it's treated as a string
                     ) { backStackEntry ->
                         val json = backStackEntry.arguments?.getString("item") ?: return@composable
-                        val scheduleItem = Gson().fromJson(Uri.decode(json), ScheduleListResponseDto.Data::class.java) // ✅ Decode safely
+                        val scheduleItem = Gson().fromJson(
+                            Uri.decode(json),
+                            ScheduleListResponseDto.Data::class.java
+                        ) // ✅ Decode safely
 
                         ScheduleDetailScreen(
                             item = scheduleItem,
@@ -170,47 +207,14 @@ class MainActivity : ComponentActivity() {
                         )
                     ) { backStackEntry ->
 
-                        val locationType = backStackEntry.arguments?.getString("locationType") ?: "new"
+                        val locationType =
+                            backStackEntry.arguments?.getString("locationType") ?: "new"
                         val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
 
-                        Log.i("TaG", "onCreate: ----------->${backStackEntry.arguments?.getString("locationType")}")
-                        AddScheduleScreen(
-                            navController,
-                            scheduleViewModel,
-                            locationType = locationType
+                        Log.i(
+                            "TaG",
+                            "onCreate: ----------->${backStackEntry.arguments?.getString("locationType")}"
                         )
-                    }
-                        val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
-                        SimpleScheduleListScreen(navController = navController,
-                            scheduleViewModel
-                        )
-
-                    }
-
-                    composable(
-                        route = "schedule_detail/{item}",
-                        arguments = listOf(navArgument("item") { type = NavType.StringType }) // ✅ Ensure it's treated as a string
-                    ) { backStackEntry ->
-                        val json = backStackEntry.arguments?.getString("item") ?: return@composable
-                        val scheduleItem = Gson().fromJson(Uri.decode(json), ScheduleListResponseDto.Data::class.java) // ✅ Decode safely
-
-                        ScheduleDetailScreen(
-                            item = scheduleItem,
-                            onBack = { navController.popBackStack() }
-                        )
-                    }
-
-                    composable(
-                        route = "add_schedule?locationType={locationType}",
-                        arguments = listOf(
-                            navArgument("locationType") { defaultValue = "current" },
-                        )
-                    ) { backStackEntry ->
-
-                        val locationType = backStackEntry.arguments?.getString("locationType") ?: "new"
-                        val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
-
-                        Log.i("TaG", "onCreate: ----------->${backStackEntry.arguments?.getString("locationType")}")
                         AddScheduleScreen(
                             navController,
                             scheduleViewModel,
@@ -218,7 +222,10 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                }}
+                }
+            }
+        }
+
     }
 
     override fun onResume() {
