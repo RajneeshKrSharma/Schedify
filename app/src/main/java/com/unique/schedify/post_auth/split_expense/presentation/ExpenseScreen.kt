@@ -672,6 +672,7 @@ fun ExpenseCard(
                 }
 
                 DashedDivider(
+                    dividerModifier = Modifier.fillMaxWidth(),
                     dividerColor = MaterialTheme.colorScheme.inversePrimary,
                     vhSpace = dp16
                 )
