@@ -13,15 +13,6 @@ class GetPreAuthDetails @Inject constructor(
 ) : ApiUseCase<ApiResponseResource<PreAuthInfoDto>, Unit> {
 
     override suspend fun execute(args: Unit?): ApiResponseResource<PreAuthInfoDto> {
-        val result = repository.getPreAuthData()
-        return if (result.isSuccessful) {
-            val resultBody = result.body()
-            resultBody?.let { data ->
-                ApiResponseResource.Success(data)
-            } ?: ApiResponseResource.Error("PreAuthInfo body null")
-        } else {
-            val errorMsg = result.errorBody()?.string() ?: "Something went wrong (PreAuthInfo error body null)"
-            ApiResponseResource.Error(errorMsg)
-        }
+        return catchWrapper { repository.getPreAuthData() }
     }
 }

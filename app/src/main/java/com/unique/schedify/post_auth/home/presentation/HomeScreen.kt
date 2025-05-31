@@ -63,7 +63,7 @@ fun HomeScreen(
                     ) {
                         viewmodel.logout()
                         Navigation.navigateAndClearBackStackScreen(
-                            navigateTo = AvailableScreens.PreAuth.PreAuthScreen,
+                            navigateTo = AvailableScreens.PreAuth.LoginScreen,
                             navController = navController
                         )
                     }

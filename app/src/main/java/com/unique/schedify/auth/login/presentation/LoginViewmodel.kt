@@ -3,7 +3,9 @@ package com.unique.schedify.auth.login.presentation
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -62,6 +64,9 @@ class LoginViewmodel @Inject constructor(
     private val _convertAccessTokenState = mutableStateOf<Resource<ConvertAccessTokenResponseDto>>(Resource.Default())
     val convertAccessTokenState: State<Resource<ConvertAccessTokenResponseDto>> = _convertAccessTokenState
 
+    val email = mutableStateOf("")
+    var otpField = mutableStateOf("")
+
     fun getOtp(emailId: String) {
         viewModelScope.launch {
             _getOtpState.value = Resource.Loading()
@@ -79,14 +84,24 @@ class LoginViewmodel @Inject constructor(
         }
     }
 
+    fun resetOtpState() {
+        _getOtpState.value = Resource.Default()
+    }
+
     fun loginViaOtp(loginRequest: LoginViaOtpRequestDto) {
         viewModelScope.launch {
             _loginViaOtpState.value = Resource.Loading()
-            with(loginViaOtpUseCase.execute(loginRequest)) {
+            with(loginViaOtpUseCase.execute(
+                sharedPrefConfig.getFcmToken()?.let { fcmToken ->
+                    loginRequest.copy(fcmToken = fcmToken)
+                } ?: loginRequest)
+            ) {
                 when (this) {
                     is ApiResponseResource.Error -> _loginViaOtpState.value = Resource.Error(this.errorMessage)
                     is ApiResponseResource.Success -> {
                         sharedPrefConfig.saveAuthToken(data.data?.authData?.key ?: "")
+                        sharedPrefConfig.saveAuthUserId(data.data?.authData?.user ?: -1)
+                        sharedPrefConfig.saveAuthUserEmailId(data.data?.emailId ?: "")
                         sharedPrefConfig.saveIsUserViaOtp(true)
                         _loginViaOtpState.value = Resource.Success(this.data)
                     }

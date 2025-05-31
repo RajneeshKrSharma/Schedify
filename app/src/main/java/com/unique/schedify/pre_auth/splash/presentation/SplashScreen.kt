@@ -21,8 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.unique.schedify.R
 import com.unique.schedify.core.presentation.navigation.Navigation
-import com.unique.schedify.core.presentation.utils.size_units.dp100
 import com.unique.schedify.core.presentation.utils.size_units.dp16
+import com.unique.schedify.core.presentation.utils.size_units.dp200
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.pre_auth.presentation.Screen
@@ -34,7 +34,7 @@ fun SplashScreen(
     viewModel: SplashViewmodel = hiltViewModel()
 ) {
     LaunchedEffect(key1 = true) {
-        delay(1200)
+        delay(1000)
         if (viewModel.isUserLoggedIn())
             Navigation.navigateToScreen(
                 navigateTo = AvailableScreens.PostAuth.HomeScreen,
@@ -44,7 +44,7 @@ fun SplashScreen(
 
         else {
             Navigation.navigateToScreen(
-                navigateTo = AvailableScreens.PreAuth.PreAuthScreen,
+                navigateTo = AvailableScreens.PreAuth.LoginScreen,
                 navController = navController,
                 popUpToScreen = Screen.SplashScreen
             )
@@ -60,9 +60,9 @@ fun SplashScreen(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Replace with your logo
+                painter = painterResource(id = R.drawable.schedify), // Replace with your logo
                 contentDescription = "Logo",
-                modifier = Modifier.size(dp100)
+                modifier = Modifier.size(dp200)
             )
             Spacer(modifier = Modifier.height(dp16))
             Text(

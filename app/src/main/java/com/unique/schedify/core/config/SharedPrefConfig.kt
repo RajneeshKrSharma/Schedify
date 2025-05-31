@@ -13,6 +13,9 @@ class SharedPrefConfig @Inject constructor(
     companion object {
         private const val KEY_AUTH_TOKEN = "auth_token"
         private const val KEY_IS_OTP_LOGIN = "is_otp_login"
+        private const val AUTH_USER_ID = "auth_user_id"
+        private const val AUTH_USER_EMAIL = "auth_user_emailId"
+        private const val KEY_FCM_TOKEN = "fcm_token"
 
         private const val KEY_CURRENT_TIME_STAMP = "current_time_stamp"
     }
@@ -43,5 +46,29 @@ class SharedPrefConfig @Inject constructor(
 
     fun getCurrentTimeStamp(): Long {
         return sharedPreferences.getLong(KEY_CURRENT_TIME_STAMP, 0L)
+    }
+
+    fun saveAuthUserId(token: Int) {
+        sharedPreferences.edit { putInt(AUTH_USER_ID, token) }
+    }
+
+    fun getAuthUserId(): Int {
+        return sharedPreferences.getInt(AUTH_USER_ID, -1)
+    }
+
+    fun saveAuthUserEmailId(email: String) {
+        sharedPreferences.edit { putString(AUTH_USER_EMAIL, email) }
+    }
+
+    fun getAuthUserEmailId(): String? {
+        return sharedPreferences.getString(AUTH_USER_EMAIL, null)
+    }
+
+    fun saveFcmToken(token: String) {
+        sharedPreferences.edit { putString(KEY_FCM_TOKEN, token) }
+    }
+
+    fun getFcmToken(): String? {
+        return sharedPreferences.getString(KEY_FCM_TOKEN, null)
     }
 }
