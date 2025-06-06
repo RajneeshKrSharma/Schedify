@@ -19,11 +19,14 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
+import androidx.navigation.Navigation
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.gson.Gson
 import com.unique.schedify.auth.login.presentation.LoginScreen
 import com.unique.schedify.auth.login.presentation.LoginViewmodel
@@ -31,6 +34,8 @@ import com.unique.schedify.auth.login.presentation.OtpInputScreen
 import com.unique.schedify.core.presentation.utils.GROUP_GRAPH_NAME
 import com.unique.schedify.core.presentation.utils.LOGIN_GRAPH_NAME
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
+import com.unique.schedify.post_auth.home.presentation.HomeViewmodel
+import com.unique.schedify.post_auth.home.presentation.TakeAddressScreen
 import com.unique.schedify.post_auth.schedule_list.data.remote.dto.ScheduleListResponseDto
 import com.unique.schedify.post_auth.schedule_list.presentation.AddScheduleScreen
 import com.unique.schedify.post_auth.schedule_list.presentation.ScheduleDetailScreen
@@ -76,6 +81,10 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = Screen.HomeScreen.route) {
                         HomeScreen(navController = navController)
+                    }
+                    composable(route = Screen.TakeAddressScreen.route) {
+                        val homeViewModel: HomeViewmodel = hiltViewModel()
+                        TakeAddressScreen(navController, homeViewModel)
                     }
 
                     navigation(
@@ -200,27 +209,43 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable(
-                        route = "add_schedule?locationType={locationType}",
-                        arguments = listOf(
-                            navArgument("locationType") { defaultValue = "current" },
-                        )
-                    ) { backStackEntry ->
+                    navigation(
+                        startDestination = Screen.SimpleScheduleList.route,
+                        route = GROUP_GRAPH_NAME
+                    ) {
 
-                        val locationType =
+
+                        composable(route = Screen.SimpleScheduleList.route) { backStackEntry ->
+//                            val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
+                            val parentEntry = remember(backStackEntry) {
+                                navController.getBackStackEntry(GROUP_GRAPH_NAME)
+                            }
+                            val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel(parentEntry)
+                            SimpleScheduleListScreen(navController, scheduleViewModel)
+                        }
+
+                        composable(
+                            route = "add_schedule?locationType={locationType}",
+                            arguments = listOf(
+                                navArgument("locationType") { defaultValue = "current" },
+                            )
+                        ) { backStackEntry ->
+                            val parentEntry = remember(backStackEntry) {
+                                navController.getBackStackEntry(GROUP_GRAPH_NAME)
+                            }
+                            val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel(parentEntry)
+                            val locationType =
                             backStackEntry.arguments?.getString("locationType") ?: "new"
-                        val scheduleViewModel: SimpleScheduleListViewModel = hiltViewModel()
 
-                        Log.i(
-                            "TaG",
-                            "onCreate: ----------->${backStackEntry.arguments?.getString("locationType")}"
-                        )
-                        AddScheduleScreen(
-                            navController,
-                            scheduleViewModel,
-                            locationType = locationType
-                        )
+                            AddScheduleScreen(
+                                navController,
+                                scheduleViewModel,
+                                locationType = locationType
+                            )
+                        }
                     }
+
+
 
                 }
             }

@@ -1,7 +1,12 @@
 package com.unique.schedify
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.util.Log
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
@@ -11,17 +16,20 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
-class SchedifyApplication : Application() {
+class SchedifyApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var connectivityChecker: ConnectivityChecker
 
     @Inject
     lateinit var sharedPrefConfig: SharedPrefConfig
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
     override fun onCreate() {
         super.onCreate()
-
         initializeFirebase()
+        createNotificationChannel()
+        //scheduleWorkers(this)
     }
 
 
@@ -51,4 +59,21 @@ class SchedifyApplication : Application() {
             }
 
     }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "weather_notify",
+                "Weather Notifications",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 }

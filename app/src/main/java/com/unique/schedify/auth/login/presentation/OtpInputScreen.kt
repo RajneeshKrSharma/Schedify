@@ -41,13 +41,10 @@ import com.unique.schedify.core.presentation.utils.size_units.dp60
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp16
 import com.unique.schedify.core.presentation.utils.size_units.sp28
-import com.unique.schedify.core.presentation.utils.size_units.sp36
-import com.unique.schedify.core.presentation.utils.size_units.sp48
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.core.util.MaxOtpField
 import com.unique.schedify.core.util.OtpExpiryInfo
 import com.unique.schedify.core.util.Resource
-import com.unique.schedify.pre_auth.presentation.Screen
 import kotlinx.coroutines.delay
 
 @Composable
@@ -139,6 +136,9 @@ fun OtpInputFieldsUi(
     val keyboardController = LocalSoftwareKeyboardController.current
     // ✅ Show OTP Input Section When OTP is Received
     if (viewModel.getOtpState.value is Resource.Success) {
+
+        Toast.makeText(LocalContext.current, "OTP Sent to ${viewModel.getOtpState.value.data?.data?.otp}", Toast.LENGTH_SHORT).show()
+
         val otpFieldState = remember { mutableStateListOf("", "", "", "") }
         val focusManager = LocalFocusManager.current
 

@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -18,6 +19,7 @@ import com.unique.schedify.core.presentation.common_composables.ActionIcons
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.post_auth.post_auth_utils.HomeGridCellType
+import com.unique.schedify.pre_auth.presentation.Screen
 
 
 class HomeScreenClass : GridListScreen() {
@@ -47,6 +49,11 @@ fun HomeScreen(
     viewmodel: HomeViewmodel = hiltViewModel(),
     navController: NavController,
 ) {
+    LaunchedEffect(Unit) {
+        if (viewmodel.getUserCompleteAddress() == "") {
+            navController.navigate(Screen.TakeAddressScreen.route)
+        }
+    }
     HomeScreenClass().ComposeGridListScreen(
         navController = navController,
         topAppBar = {

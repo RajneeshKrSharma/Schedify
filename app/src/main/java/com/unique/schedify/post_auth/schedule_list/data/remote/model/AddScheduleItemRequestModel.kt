@@ -16,5 +16,8 @@ data class AddScheduleItemRequestModel(
     @SerializedName("subTitle")
     val subTitle: String?,
     @SerializedName("title")
-    val title: String?
+    val title: String?,
+    @SerializedName("isWeatherNotifyEnabled")
+    val isWeatherNotifyEnabled: Boolean? = false
+
 ) : Parcelable

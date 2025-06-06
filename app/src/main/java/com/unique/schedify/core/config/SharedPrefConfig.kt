@@ -16,6 +16,8 @@ class SharedPrefConfig @Inject constructor(
         private const val AUTH_USER_ID = "auth_user_id"
         private const val AUTH_USER_EMAIL = "auth_user_emailId"
         private const val KEY_FCM_TOKEN = "fcm_token"
+        private const val USER_COMPLETE_ADDRESS = "user_complete_address"
+        private const val USER_PINCODE = "user_pincode"
 
         private const val KEY_CURRENT_TIME_STAMP = "current_time_stamp"
     }
@@ -70,5 +72,21 @@ class SharedPrefConfig @Inject constructor(
 
     fun getFcmToken(): String? {
         return sharedPreferences.getString(KEY_FCM_TOKEN, null)
+    }
+
+    fun saveUserCompleteAddress(address: String) {
+        sharedPreferences.edit { putString(USER_COMPLETE_ADDRESS, address) }
+    }
+
+    fun getUserCompleteAddress(): String? {
+        return sharedPreferences.getString(USER_COMPLETE_ADDRESS, null)
+    }
+
+    fun saveUserPincode(pincode: String) {
+        sharedPreferences.edit { putString(USER_PINCODE, pincode) }
+    }
+
+    fun getUserPincode(): String? {
+        return sharedPreferences.getString(USER_PINCODE, null)
     }
 }

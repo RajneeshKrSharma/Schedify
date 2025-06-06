@@ -39,7 +39,6 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -53,11 +52,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,11 +63,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.unique.schedify.core.presentation.utils.size_units.dp10
@@ -108,24 +101,6 @@ fun SimpleScheduleListScreen(
     val scheduleItems = viewModel.scheduleItems.value
     var fabExpanded by remember { mutableStateOf(false) }
 
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val currentOnResume by rememberUpdatedState(newValue = {
-        // This is called when Screen A resumes
-
-    })
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                currentOnResume()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -143,7 +118,7 @@ fun SimpleScheduleListScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // Add Schedule with New Location FAB
-                AnimatedVisibility(
+                /*AnimatedVisibility(
                     visible = fabExpanded,
                     enter = fadeIn() + slideInVertically { it },
                     exit = fadeOut() + slideOutVertically { it }
@@ -157,7 +132,7 @@ fun SimpleScheduleListScreen(
                     ) {
                         Icon(Icons.Default.LocationOn, "New Location")
                     }
-                }
+                }*/
 
                 // Add Schedule with Current Location FAB
                 AnimatedVisibility(
@@ -225,7 +200,8 @@ fun SimpleScheduleListScreen(
                     )
                 }
             }
-        } else {
+        }
+        else if (viewModel.scheduleItems.value is Resource.Loading){
             Box(modifier = Modifier
                 .padding(padding)
                 .padding(dp10)
@@ -233,6 +209,20 @@ fun SimpleScheduleListScreen(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
+                )
+            }
+        }
+        else if (viewModel.scheduleItems.value is Resource.Error) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(dp16),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Failed to load schedules",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
                 )
             }
         }
@@ -374,7 +364,7 @@ fun ScheduleListItem(
                         modifier = Modifier.padding(top = 4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        item.attachments.forEach { attachment ->
+                        (item.attachments as List<String?>).forEach { attachment ->
                             AttachmentChip(attachment!!)
                         }
                     }
@@ -459,22 +449,4 @@ fun calculateTimeProximity(dateTime: String): Float {
         hoursUntilEvent >= totalWindowHours -> 0.0f
         else -> 1.0f - (hoursUntilEvent / totalWindowHours)
     }
-}
-
-@Preview
-@Composable
-fun PreviewScheduleListScreen() {
-    /*val sampleSchedules = listOf(
-        ScheduleItem(
-            id = 1, title = "Date", subTitle = "First Date at night", dateTime = "2025-04-18 21:28",
-            lastScheduleOn = "09-04-2025 11:29:42 AM", priority = 2, isItemPinned = true,
-            isArchived = true, attachments = listOf("image.jpg", "file.pdf")
-        ),
-        ScheduleItem(
-            id = 1, title = "Interview", subTitle = "Interview in XYZ corp.", dateTime = "2025-04-20 12:00",
-            lastScheduleOn = "09-04-2025 11:29:42 AM", priority = 1, isItemPinned = true,
-            isArchived = false, attachments = listOf("image.jpg", "file.pdf")
-        ),
-    )*/
-    //ScheduleListScreen(sampleSchedules)
 }

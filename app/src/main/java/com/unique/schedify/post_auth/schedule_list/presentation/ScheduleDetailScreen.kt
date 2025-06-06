@@ -362,7 +362,7 @@ fun ScheduleDetailScreen(
                     )
                 }
 
-                items(item.attachments) { attachment ->
+                items(item.attachments as List<String?>) { attachment ->
                     AttachmentCard(attachment.toString())
                     Spacer(modifier = Modifier.height(8.dp))
                 }

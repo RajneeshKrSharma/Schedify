@@ -13,10 +13,12 @@ class VerifyPinCodeCase @Inject constructor(
         val result = repository.verifyPinCode(args)
         return (if (result.isSuccessful) {
             result.body()?.let { data ->
-                if (data[0].status == "Error") {
+                if (data.isNotEmpty() && data[0].status == "Error") {
                     ApiResponseResource.Error(data[0].message.toString())
-                } else {
+                } else if (data.isNotEmpty()) {
                     ApiResponseResource.Success(data)
+                } else {
+                    ApiResponseResource.Error("Empty response data")
                 }
             } ?: ApiResponseResource.Error("")
         } else {

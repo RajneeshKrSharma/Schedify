@@ -13,4 +13,5 @@ sealed class Screen(val route: String) {
     data object AddCollaboratorScreen: Screen("add_collaborator_screen")
     data object ExpenseScreen: Screen("expense_screen")
     data object OtpInputScreen: Screen("otp_input_screen")
+    data object TakeAddressScreen: Screen("take_address_screen")
 }
