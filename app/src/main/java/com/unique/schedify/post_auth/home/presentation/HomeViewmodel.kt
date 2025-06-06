@@ -8,8 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.unique.schedify.core.config.SharedPrefConfig
 import com.unique.schedify.core.util.ApiResponseResource
 import com.unique.schedify.core.util.Resource
-import com.unique.schedify.post_auth.schedule_list.data.remote.dto.AddScheduleItemDto
-import com.unique.schedify.post_auth.schedule_list.data.remote.dto.ScheduleListResponseDto
 import com.unique.schedify.post_auth.schedule_list.data.remote.dto.VerifyPinCodeResponseDto
 import com.unique.schedify.post_auth.schedule_list.use_case.AddAddressCase
 import com.unique.schedify.post_auth.schedule_list.use_case.UploadFileUseCase

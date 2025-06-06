@@ -17,8 +17,6 @@ import com.unique.schedify.post_auth.schedule_list.domain.repository.ScheduleRep
 import com.unique.schedify.post_auth.schedule_list.use_case.GetWeatherStatusUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter

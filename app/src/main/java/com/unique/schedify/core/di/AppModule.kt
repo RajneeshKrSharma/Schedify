@@ -3,10 +3,7 @@ package com.unique.schedify.core.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
-import androidx.work.ListenableWorker
-import androidx.work.WorkerFactory
 import com.unique.schedify.auth.login.data.remote.LoginApis
-import com.unique.schedify.post_auth.split_expense.data.remote.dto.SplitExpenseApis
 import com.unique.schedify.core.ConnectivityChecker
 import com.unique.schedify.core.PendingRequestManager
 import com.unique.schedify.core.config.SharedPrefConfig
@@ -15,6 +12,7 @@ import com.unique.schedify.core.network.Api
 import com.unique.schedify.post_auth.schedule_list.data.local.ScheduleItemDao
 import com.unique.schedify.post_auth.schedule_list.data.remote.dto.ScheduleListApis
 import com.unique.schedify.post_auth.schedule_list.domain.repository.ScheduleRepository
+import com.unique.schedify.post_auth.split_expense.data.remote.dto.SplitExpenseApis
 import com.unique.schedify.pre_auth.pre_auth_loading.data.remote.PreAuthApis
 import dagger.Module
 import dagger.Provides
@@ -25,7 +23,6 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
