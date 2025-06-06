@@ -103,6 +103,7 @@ val dp97 = 97.dp
 val dp98 = 98.dp
 val dp99 = 99.dp
 val dp100 = 100.dp
+val dp120 = 120.dp
 val dp150 = 150.dp
 val dp200 = 200.dp
 val dp250 = 250.dp

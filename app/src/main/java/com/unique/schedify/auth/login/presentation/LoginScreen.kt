@@ -38,11 +38,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -54,11 +51,9 @@ import com.unique.schedify.core.presentation.common_composables.LoadingUi
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp12
 import com.unique.schedify.core.presentation.utils.size_units.dp16
-import com.unique.schedify.core.presentation.utils.size_units.dp4
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp20
 import com.unique.schedify.core.presentation.utils.size_units.sp24
-import com.unique.schedify.core.presentation.utils.size_units.sp36
 import com.unique.schedify.core.presentation.utils.size_units.sp48
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.core.util.Resource

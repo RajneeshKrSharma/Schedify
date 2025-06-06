@@ -9,6 +9,7 @@ sealed class AvailableScreens {
         data object SplitScheduleListScreen : PostAuth()
         data object SplitScheduleListDetailScreen : PostAuth()
         data object ExpenseScreen : PostAuth()
+        data object AddScheduleItem : PostAuth()
     }
 
     sealed class PreAuth : AvailableScreens() {
@@ -30,4 +31,5 @@ fun AvailableScreens.toScreen(): Screen = when (this) {
     AvailableScreens.PreAuth.SplashScreen -> Screen.SplashScreen
     AvailableScreens.PostAuth.ExpenseScreen -> Screen.ExpenseScreen
     AvailableScreens.PreAuth.OtpInputScreen -> Screen.OtpInputScreen
+    AvailableScreens.PostAuth.AddScheduleItem -> Screen.AddScheduleItem
 }

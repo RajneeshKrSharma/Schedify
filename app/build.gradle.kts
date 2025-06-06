@@ -79,6 +79,7 @@ dependencies {
     ksp(libs.dagger.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)
     ksp(libs.androidx.hilt.viewmodel)
+//    kapt(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation)
     implementation(libs.androidx.navigation)
 
@@ -99,6 +100,8 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.play.services.auth)
 
+    implementation ("androidx.compose.material:material-icons-extended:1.7.8")
+
     implementation(libs.androidx.material)
 
     implementation(platform(libs.firebase.bom))
@@ -107,4 +110,12 @@ dependencies {
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.firestore)
+
+
+// WorkManager
+    implementation (libs.androidx.work.runtime.ktx)
+
+// Hilt WorkManager Integration
+    implementation (libs.androidx.hilt.work)
+    ksp( libs.androidx.hilt.compiler)
 }
