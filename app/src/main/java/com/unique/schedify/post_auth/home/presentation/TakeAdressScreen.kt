@@ -30,12 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.unique.schedify.core.presentation.common_composables.GradientButton
 import com.unique.schedify.core.util.Resource
 import com.unique.schedify.post_auth.schedule_list.data.remote.dto.VerifyPinCodeResponseDto
+import com.unique.schedify.post_auth.schedule_list.presentation.SimpleScheduleListViewModel
 import kotlinx.coroutines.launch
 
 

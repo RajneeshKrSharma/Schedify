@@ -3,6 +3,8 @@ package com.unique.schedify.core.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
+import androidx.work.ListenableWorker
+import androidx.work.WorkerFactory
 import com.unique.schedify.auth.login.data.remote.LoginApis
 import com.unique.schedify.core.ConnectivityChecker
 import com.unique.schedify.core.PendingRequestManager
@@ -23,6 +25,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
