@@ -22,6 +22,7 @@ import retrofit2.http.Url
 
 interface ScheduleListApis : BaseApi {
 
+
     @GET(SCHEDULE_LIST)
     suspend fun getScheduleList(): Response<ScheduleListResponseDto>
 

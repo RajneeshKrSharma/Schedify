@@ -58,6 +58,7 @@ class SimpleScheduleListViewModel @Inject constructor(
     private var _fileUploaded = mutableStateOf<Resource<Boolean>>(Resource.Default())
     val fileUploaded: State<Resource<Boolean>> = _fileUploaded
 
+    // LiveData or StateFlow to hold schedule items
     private var _scheduleItems = mutableStateOf<Resource<List<ScheduleListResponseDto.Data?>>>(Resource.Default())
     val scheduleItems: State<Resource<List<ScheduleListResponseDto.Data?>>> = _scheduleItems
 
@@ -68,7 +69,7 @@ class SimpleScheduleListViewModel @Inject constructor(
 
     // Function to update schedule list
     fun setScheduleItems(items: List<ScheduleListResponseDto.Data?>) {
-       _scheduleItems.value = Resource.Success(items)
+        _scheduleItems.value = Resource.Success(items)
     }
 
     init {
@@ -101,6 +102,7 @@ class SimpleScheduleListViewModel @Inject constructor(
             with(addScheduleItemUseCase.execute(item)) {
                 when (this) {
                     is ApiResponseResource.Success -> {
+                        Log.i("TaG", "success: ${this.data}")
 
                         val scheduleItem = ScheduleListResponseDto.Data(
                             attachments = this.data.data?.attachments,
@@ -151,6 +153,7 @@ class SimpleScheduleListViewModel @Inject constructor(
                         }
                     }
                     is ApiResponseResource.Error -> {
+                        Log.i("TaG", "error: ${this.errorMessage}")
                         _addedScheduleItem.value = Resource.Error(this.errorMessage)
                         delay(1000)
                         _addedScheduleItem.value = Resource.Default() // Reset state after error
@@ -257,7 +260,7 @@ class SimpleScheduleListViewModel @Inject constructor(
                            _isAddScheduleComplete.value = Resource.Error("Getting Issue for fetching weather notify details for schedule item ID: $scheduleItemId")
                         }
 
-                    }
+}
                     is ApiResponseResource.Error -> {
                         _isAddScheduleComplete.value = Resource.Error(this.errorMessage)
                     }

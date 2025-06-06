@@ -15,7 +15,7 @@ import retrofit2.Response
 import javax.inject.Inject
 
 class ScheduleListRepository @Inject constructor(
-    private val api: ScheduleListApis
+     private val api: ScheduleListApis
 ) {
 
     suspend fun getScheduleList(): Response<ScheduleListResponseDto> {
