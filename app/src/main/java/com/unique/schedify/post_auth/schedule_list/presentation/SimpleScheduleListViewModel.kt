@@ -102,7 +102,6 @@ class SimpleScheduleListViewModel @Inject constructor(
             with(addScheduleItemUseCase.execute(item)) {
                 when (this) {
                     is ApiResponseResource.Success -> {
-                        Log.i("TaG", "success: ${this.data}")
 
                         val scheduleItem = ScheduleListResponseDto.Data(
                             attachments = this.data.data?.attachments,
@@ -153,7 +152,6 @@ class SimpleScheduleListViewModel @Inject constructor(
                         }
                     }
                     is ApiResponseResource.Error -> {
-                        Log.i("TaG", "error: ${this.errorMessage}")
                         _addedScheduleItem.value = Resource.Error(this.errorMessage)
                         delay(1000)
                         _addedScheduleItem.value = Resource.Default() // Reset state after error
