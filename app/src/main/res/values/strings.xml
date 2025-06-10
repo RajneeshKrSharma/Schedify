@@ -73,4 +73,24 @@
     <string name="enter_valid_email">Enter valid email</string>
     <string name="let_s_get_you">"Let's get you in Schedify"</string>
     <string name="guest">Hi Guest, </string>
+    <string name="let_s_list_something">"Let's List something, "</string>
+    <string name="syncing_in_progress">Syncing in progress . .</string>
+    <string name="slash_separator">" / "</string>
+    <string name="the_faves_picks_for_you">The Faves picks for you . .</string>
+    <string name="listofcelldetails_is_null">listOfCellDetails is null</string>
+    <string name="permission_request">Permission Request</string>
+    <string name="permission_granted_proceed_to_next_step">Permission granted. Proceed to Next step</string>
+    <string name="permission_denied_please_enable_manually_from_settings">Permission denied. Please enable manually from settings.</string>
+    <string name="permission_denied_please_request_again">Permission denied. Please request again.</string>
+    <string name="require_notification_permission_to_notify_on_scheduled_item_s_weather_status">Require notification permission to notify on scheduled item\'s weather status.</string>
+    <string name="granted">Granted</string>
+    <string name="request">Request</string>
+    <string name="data_preparation">Data Preparation</string>
+    <string name="download_and_prepare_data_for_you">Download and prepare data for you</string>
+    <string name="yup_continue">Yup, Continue</string>
+    <string name="download_prepare_data_for_you"><![CDATA[Download & prepare data for you]]></string>
+    <string name="hi">Hi %1$s !</string>
+    <string name="explore">Explore</string>
+    <string name="great_you_have_logged_in_required_some_remaining_consents">Great you have logged In, Required some remaining consents,</string>
+    <string name="hi_need_some_consents_before_we_proceed">Hi, Need some consents before we proceed,</string>
 </resources>

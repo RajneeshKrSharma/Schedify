@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -49,6 +50,7 @@ fun BaseCompose(
     contentModifier: Modifier = Modifier,
     stripModifier: Modifier = Modifier,
     navController: NavController,
+    brush: Brush? = null,
     content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) {
     // Observe the connectivity state using collectAsState
@@ -62,7 +64,10 @@ fun BaseCompose(
         },
         bottomBar = { bottomBar?.invoke() },
         content = { paddingValues ->
-            Box(modifier = modifier.fillMaxSize()) {
+            Box(modifier = modifier
+                .fillMaxSize()
+                .let { if (brush != null) it.background(brush) else it }
+            ) {
                 Column(
                     modifier = contentModifier
                         .fillMaxSize()
@@ -125,7 +130,7 @@ fun ObserveGlobalNetworkErrors(
                 401 -> {
                     homeViewModel.logout()
                     Navigation.navigateAndClearBackStackScreen(
-                        navigateTo = AvailableScreens.PreAuth.PreAuthScreen,
+                        navigateTo = AvailableScreens.PreAuth.LoginScreen,
                         navController = navController
                     )
                 }
