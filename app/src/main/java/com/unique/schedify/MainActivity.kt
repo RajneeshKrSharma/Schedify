@@ -1,22 +1,11 @@
 package com.unique.schedify
 
-import android.Manifest.permission.POST_NOTIFICATIONS
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.remember
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,18 +19,19 @@ import com.unique.schedify.auth.login.presentation.OtpInputScreen
 import com.unique.schedify.core.presentation.utils.GROUP_GRAPH_NAME
 import com.unique.schedify.core.presentation.utils.LOGIN_GRAPH_NAME
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
+import com.unique.schedify.post_auth.post_auth_loading.PostAuthConsentUiScreen
+import com.unique.schedify.post_auth.post_auth_loading.PostAuthDownloadAndSaveUiScreen
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
 import com.unique.schedify.post_auth.split_expense.presentation.ExpenseScreen
 import com.unique.schedify.post_auth.split_expense.presentation.GroupListScreen
 import com.unique.schedify.post_auth.split_expense.presentation.LoadCollaboratorScreen
 import com.unique.schedify.post_auth.split_expense.presentation.SplitExpenseViewModel
-import com.unique.schedify.pre_auth.pre_auth_loading.presentation.PreAuthScreen
+import com.unique.schedify.pre_auth.pre_auth_loading.presentation.PreAuthConsentUiScreen
+import com.unique.schedify.pre_auth.pre_auth_loading.presentation.PreAuthDownloadAndSaveUiScreen
 import com.unique.schedify.pre_auth.presentation.Screen
 import com.unique.schedify.pre_auth.splash.presentation.SplashScreen
 import com.unique.schedify.ui.theme.SchedifyTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -62,9 +52,6 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(route = Screen.AppTourScreen.route) {
                         SplashScreen(navController = navController)
-                    }
-                    composable(route = Screen.PreAuthScreen.route) {
-                        PreAuthScreen(navController = navController)
                     }
 
                     composable(route = Screen.HomeScreen.route) {
@@ -138,23 +125,20 @@ class MainActivity : ComponentActivity() {
                     composable(route = Screen.SimpleScheduleList.route) {
 
                     }
-                }
-            }
-        }
-    }
 
-    override fun onResume() {
-        super.onResume()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Log.d("FCM", "onResume: ")
-            if (ContextCompat.checkSelfPermission(this, POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(POST_NOTIFICATIONS),
-                    1001
-                )
+                    composable(route = Screen.PreAuthConsentScreen.route) {
+                        PreAuthConsentUiScreen(navController = navController)
+                    }
+                    composable(route = Screen.PreAuthDownloadAndSaveScreen.route) {
+                        PreAuthDownloadAndSaveUiScreen(navController = navController)
+                    }
+                    composable(route = Screen.PostAuthConsentScreen.route) {
+                        PostAuthConsentUiScreen(navController = navController)
+                    }
+                    composable(route = Screen.PostAuthDownloadAndSaveScreen.route) {
+                        PostAuthDownloadAndSaveUiScreen(navController = navController)
+                    }
+                }
             }
         }
     }

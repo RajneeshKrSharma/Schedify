@@ -36,11 +36,6 @@ enum class ExpenseState {
     DEFAULT
 }
 
-enum class HomeGridCellType(val description: String) {
-    SIMPLE("Simple"),
-    SPLIT("Split")
-}
-
 
 enum class SplitScheduleListMoreOption(val description: String) {
     COLLABORATOR_SCREEN("collaboratorScreen"),

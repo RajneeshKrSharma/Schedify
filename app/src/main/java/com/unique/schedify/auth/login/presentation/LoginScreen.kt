@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
@@ -58,6 +59,7 @@ import com.unique.schedify.core.presentation.utils.size_units.dp4
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp20
 import com.unique.schedify.core.presentation.utils.size_units.sp24
+import com.unique.schedify.core.presentation.utils.size_units.sp32
 import com.unique.schedify.core.presentation.utils.size_units.sp36
 import com.unique.schedify.core.presentation.utils.size_units.sp48
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
@@ -162,7 +164,7 @@ fun LoginScreen(
                                 Text(
                                     text = stringResource(R.string.guest),
                                     style = MaterialTheme.typography.headlineLarge.copy(
-                                        fontSize = sp48,
+                                        fontSize = sp32,
                                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                                         shadow = Shadow(
                                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -190,7 +192,7 @@ fun LoginScreen(
                             Card(
                                 modifier = Modifier
                                     .padding(dp8)
-                                    .weight(0.4f)
+                                    .wrapContentHeight()
                                     .fillMaxWidth(),
                                 shape = RoundedCornerShape(dp16),
                                 elevation = CardDefaults.cardElevation(dp8),
@@ -200,7 +202,7 @@ fun LoginScreen(
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .fillMaxSize()
+                                        .wrapContentHeight()
                                         .padding(dp16),
                                     verticalArrangement = Arrangement.SpaceEvenly
                                 ) {
@@ -279,7 +281,7 @@ fun LoginButton(
 ) {
     GradientButton(
         text = btnName,
-        textStyle = MaterialTheme.typography.titleMedium.copy(
+        textStyle = MaterialTheme.typography.titleLarge.copy(
             color = MaterialTheme.colorScheme.onSecondaryContainer
         ),
         enabled = isEnabled,
@@ -326,9 +328,8 @@ fun EmailInputFieldUi(
             modifier = Modifier
                 .fillMaxWidth(),
             enabled = loginViewmodel.getOtpState.value !is Resource.Success,
-            textStyle = MaterialTheme.typography.labelMedium.copy(
+            textStyle = MaterialTheme.typography.titleMedium.copy(
                 color = MaterialTheme.colorScheme.primary,
-                fontSize = sp20
             ),
             supportingText = {
                 if (emailIdState.value.isNotEmpty() && emailIdState.value.isEmailValid().not()) {

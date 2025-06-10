@@ -16,4 +16,9 @@ object Api {
     const val COLLABORATOR = "api/list/collaborators"
     const val EXPENSE = "api/list/expenses"
 
+    //POST AUTH APIS
+    const val POST_AUTH_DATA = "/api/post/getPostLoginDetails"
+
+    //WEATHER USER MAPPED APIS
+    const val USER_MAPPED_WEATHER_DATA = "/api/weather/user-mapped-forecast-data"
 }

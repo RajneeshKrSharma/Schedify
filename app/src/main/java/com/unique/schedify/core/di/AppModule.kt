@@ -10,6 +10,9 @@ import com.unique.schedify.core.PendingRequestManager
 import com.unique.schedify.core.config.SharedPrefConfig
 import com.unique.schedify.core.local_db.SchedifyDatabase
 import com.unique.schedify.core.network.Api
+import com.unique.schedify.post_auth.post_auth_loading.data.remote.PostAuthApis
+import com.unique.schedify.post_auth.post_auth_loading.local.UserMappedWeatherStatusDao
+import com.unique.schedify.pre_auth.pre_auth_loading.data.local.PreAuthDao
 import com.unique.schedify.pre_auth.pre_auth_loading.data.remote.PreAuthApis
 import dagger.Module
 import dagger.Provides
@@ -106,4 +109,19 @@ object AppModule {
         }
     }
 
+    @Provides
+    @Singleton
+    fun providePostAuthApi(retrofit: Retrofit): PostAuthApis {
+        return retrofit.create(PostAuthApis::class.java)
+    }
+
+    @Provides
+    fun providePreAuthDao(database: SchedifyDatabase): PreAuthDao {
+        return database.preAuthDao
+    }
+
+    @Provides
+    fun provideUserMappedWeatherStatusDto(database: SchedifyDatabase): UserMappedWeatherStatusDao {
+        return database.userMappedWeatherStatusDao
+    }
 }
