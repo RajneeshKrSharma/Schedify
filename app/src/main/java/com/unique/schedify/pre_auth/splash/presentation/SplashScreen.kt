@@ -37,14 +37,14 @@ fun SplashScreen(
         delay(1000)
         if (viewModel.isUserLoggedIn())
             Navigation.navigateToScreen(
-                navigateTo = AvailableScreens.PostAuth.HomeScreen,
+                navigateTo = AvailableScreens.PostAuth.PostAuthConsentScreen,
                 navController = navController,
                 popUpToScreen = Screen.SplashScreen
             )
 
         else {
             Navigation.navigateToScreen(
-                navigateTo = AvailableScreens.PreAuth.LoginScreen,
+                navigateTo = AvailableScreens.PreAuth.PreAuthConsentScreen,
                 navController = navController,
                 popUpToScreen = Screen.SplashScreen
             )

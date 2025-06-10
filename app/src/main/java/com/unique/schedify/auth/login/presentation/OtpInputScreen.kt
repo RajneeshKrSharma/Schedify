@@ -41,13 +41,10 @@ import com.unique.schedify.core.presentation.utils.size_units.dp60
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp16
 import com.unique.schedify.core.presentation.utils.size_units.sp28
-import com.unique.schedify.core.presentation.utils.size_units.sp36
-import com.unique.schedify.core.presentation.utils.size_units.sp48
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.core.util.MaxOtpField
 import com.unique.schedify.core.util.OtpExpiryInfo
 import com.unique.schedify.core.util.Resource
-import com.unique.schedify.pre_auth.presentation.Screen
 import kotlinx.coroutines.delay
 
 @Composable
@@ -98,7 +95,7 @@ fun CreateOtpUI(
         || viewModel.convertAccessTokenState.value is Resource.Success
     ) {
         Navigation.navigateAndClearBackStackScreen(
-            navigateTo = AvailableScreens.PostAuth.HomeScreen,
+            navigateTo = AvailableScreens.PostAuth.PostAuthConsentScreen,
             navController = navController
         )
     }
@@ -143,7 +140,6 @@ fun OtpInputFieldsUi(
         val focusManager = LocalFocusManager.current
 
         OtpTimerUi(
-            loginViewmodel = viewModel,
             onTimerFinished = onTimerFinished
         )
 
@@ -210,7 +206,6 @@ fun OtpInputFieldsUi(
 
 @Composable
 private fun OtpTimerUi(
-    loginViewmodel: LoginViewmodel,
     onTimerFinished: () -> Unit,
 ) {
     val timerState = remember { mutableIntStateOf(OtpExpiryInfo.OTP_EXPIRY_TIME.time) }

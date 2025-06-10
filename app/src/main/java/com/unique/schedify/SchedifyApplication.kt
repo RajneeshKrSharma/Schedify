@@ -2,6 +2,8 @@ package com.unique.schedify
 
 import android.app.Application
 import android.util.Log
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
@@ -11,12 +13,20 @@ import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
-class SchedifyApplication : Application() {
+class SchedifyApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var connectivityChecker: ConnectivityChecker
 
     @Inject
     lateinit var sharedPrefConfig: SharedPrefConfig
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -49,6 +59,5 @@ class SchedifyApplication : Application() {
                 Log.d("FCM", "Manual FCM Token: $token")
                 sharedPrefConfig.saveFcmToken(token)
             }
-
     }
 }
