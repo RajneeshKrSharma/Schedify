@@ -1,5 +1,7 @@
 package com.unique.schedify.core.presentation.base_composables
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -25,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -57,6 +60,7 @@ fun BaseCompose(
     val viewModel: BaseViewModel = hiltViewModel()
     val isConnected by viewModel.isConnected.collectAsState()
     val showStrip by viewModel.showStrip.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -115,12 +119,14 @@ fun BaseCompose(
     )
 
     ObserveGlobalNetworkErrors(
+        context = context,
         navController = navController
     )
 }
 
 @Composable
 fun ObserveGlobalNetworkErrors(
+    context: Context,
     navController: NavController,
     homeViewModel: HomeViewmodel = hiltViewModel()
 ) {
@@ -128,6 +134,7 @@ fun ObserveGlobalNetworkErrors(
         NetworkErrorEmitter.networkErrors.collect { errorCode ->
             when (errorCode) {
                 401 -> {
+                    Toast.makeText(context, "Session Expired, Login again !", Toast.LENGTH_SHORT).show()
                     homeViewModel.logout()
                     Navigation.navigateAndClearBackStackScreen(
                         navigateTo = AvailableScreens.PreAuth.LoginScreen,

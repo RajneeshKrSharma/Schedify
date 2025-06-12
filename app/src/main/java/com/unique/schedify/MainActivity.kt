@@ -26,6 +26,7 @@ import com.unique.schedify.post_auth.split_expense.presentation.ExpenseScreen
 import com.unique.schedify.post_auth.split_expense.presentation.GroupListScreen
 import com.unique.schedify.post_auth.split_expense.presentation.LoadCollaboratorScreen
 import com.unique.schedify.post_auth.split_expense.presentation.SplitExpenseViewModel
+import com.unique.schedify.post_auth.user_mapped_weather.presentation.UserMappedWeatherScreen
 import com.unique.schedify.pre_auth.pre_auth_loading.presentation.PreAuthConsentUiScreen
 import com.unique.schedify.pre_auth.pre_auth_loading.presentation.PreAuthDownloadAndSaveUiScreen
 import com.unique.schedify.pre_auth.presentation.Screen
@@ -137,6 +138,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(route = Screen.PostAuthDownloadAndSaveScreen.route) {
                         PostAuthDownloadAndSaveUiScreen(navController = navController)
+                    }
+                    composable(route = Screen.UserMappedWeatherScreen.route) {
+                        UserMappedWeatherScreen(navController = navController)
                     }
                 }
             }
