@@ -11,6 +11,7 @@ sealed class AvailableScreens {
         data object ExpenseScreen : PostAuth()
         data object PostAuthConsentScreen : PreAuth()
         data object PostAuthDownloadAndSaveScreen : PreAuth()
+        data object UserMappedWeatherScreen : PreAuth()
     }
 
     sealed class PreAuth : AvailableScreens() {
@@ -36,4 +37,5 @@ fun AvailableScreens.toScreen(): Screen = when (this) {
     AvailableScreens.PreAuth.PreAuthDownloadAndSaveScreen -> Screen.PreAuthDownloadAndSaveScreen
     AvailableScreens.PostAuth.PostAuthConsentScreen -> Screen.PostAuthConsentScreen
     AvailableScreens.PostAuth.PostAuthDownloadAndSaveScreen -> Screen.PostAuthDownloadAndSaveScreen
+    AvailableScreens.PostAuth.UserMappedWeatherScreen -> Screen.UserMappedWeatherScreen
 }

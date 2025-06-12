@@ -36,4 +36,12 @@ interface PreAuthDao {
 
     @Query("DELETE FROM HomeCellDetail")
     suspend fun deleteHomeCellDetail()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAppTourData(
+        appTourEntity: AppTourEntity
+    )
+
+    @Query("SELECT * FROM AppTourEntity")
+    suspend fun getAppTourData(): List<AppTourEntity>
 }

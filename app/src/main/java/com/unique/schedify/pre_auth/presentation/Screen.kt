@@ -15,4 +15,5 @@ sealed class Screen(val route: String) {
     data object PreAuthDownloadAndSaveScreen: Screen("pre_auth_download_and_save_screen")
     data object PostAuthConsentScreen: Screen("post_auth_consent_screen")
     data object PostAuthDownloadAndSaveScreen: Screen("post_auth_download_and_save_screen")
+    data object UserMappedWeatherScreen: Screen("user_mapped_weather_screen")
 }
