@@ -304,7 +304,7 @@ fun CreateLoginUI(
             loginViewmodel = viewModel,
             onRequestOtp = {
                 keyboardController?.hide()
-                viewModel.getOtp(emailId = viewModel.email.value)
+                viewModel.getOtp()
             }
         )
     }

@@ -10,4 +10,12 @@ data class LoginViaOtpRequestDto(
     val otp: String?,
     @SerializedName("fcmToken")
     val fcmToken: String?
-)
+) {
+    companion object {
+        fun default() = LoginViaOtpRequestDto(
+            emailId = null,
+            otp = null,
+            fcmToken = null
+        )
+    }
+}

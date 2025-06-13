@@ -44,7 +44,7 @@ fun LoadingUi() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(waveColor.copy(alpha = 0.3f))
+                .background(waveColor.copy(alpha = 0.1f))
         )
         Box(
             modifier = Modifier.fillMaxSize(),
