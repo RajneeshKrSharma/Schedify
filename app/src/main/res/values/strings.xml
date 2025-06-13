@@ -93,4 +93,9 @@
     <string name="explore">Explore</string>
     <string name="great_you_have_logged_in_required_some_remaining_consents">Great you have logged In, Required some remaining consents,</string>
     <string name="hi_need_some_consents_before_we_proceed">Hi, Need some consents before we proceed,</string>
+    <string name="please_provide_email_id">Please provide email id</string>
+    <string name="resend">Resend</string>
+    <string name="enter_otp">Enter Otp</string>
+    <string name="otp_expired">OTP Expired</string>
+    <string name="try_with_another_emailid">Try with another EmailId</string>
 </resources>
