@@ -25,8 +25,8 @@ interface SplitExpenseRepository {
 
     suspend fun saveExpense(expenseRequestDto: ExpenseRequestDto): Response<Any>
 
-    suspend fun updateExpense(expenseId: Int, expenseRequestDto: ExpenseRequestDto): Response<Any>
+    suspend fun updateExpense(expenseCreationId: String, expenseRequestDto: ExpenseRequestDto): Response<Any>
 
-    suspend fun deleteExpense(expenseId: Int): Response<Any>
+    suspend fun deleteExpense(expenseCreationId: String): Response<Any>
 
 }

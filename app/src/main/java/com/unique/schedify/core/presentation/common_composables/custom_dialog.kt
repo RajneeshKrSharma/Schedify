@@ -17,17 +17,20 @@ fun CustomDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
         onDismissRequest = onDismiss,
         title = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.secondary),
+                textAlign = TextAlign.Center
             )
         },
         text = {
             Text(
-                desc, style = MaterialTheme.typography.labelMedium.copy(
-                color = MaterialTheme.colorScheme.secondary),
+                desc, style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onPrimaryContainer),
                 textAlign = TextAlign.Center
             )
         },

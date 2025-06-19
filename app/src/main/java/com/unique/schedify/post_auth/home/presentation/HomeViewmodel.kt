@@ -46,7 +46,7 @@ class HomeViewmodel @Inject constructor(
 
 
     fun logout() {
-        sharedPrefConfig.clearAll()
+        sharedPrefConfig.clearUserData()
     }
 
     fun getUserName(): String =

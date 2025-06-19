@@ -62,46 +62,15 @@ enum class AddCollaboratorFields(val description: String) {
 }
 
 enum class EditCollaboratorFields(val description: String) {
-    COLLABORATOR_NAME("Collaborator Name"),
-    PAYMENT_QR_URL("Payment QR LINK"),
-    REDIRECT_UPI_URL("Redirect UPI LINK"),
-    PREFERRED_SETTLE_MODE("Preferred Settle Mode"),
-    PREFERRED_SETTLE_MEDIUM("Preferred Settle Medium");
+    COLLABORATOR_NAME("Collaborator Name");
 
     companion object {
         fun fromDescription(description: String): EditCollaboratorFields {
             return entries.find { it.description.equals(description, ignoreCase = true) }
-                ?: PREFERRED_SETTLE_MODE
+                ?: COLLABORATOR_NAME
         }
     }
 }
-
-enum class OnlinePaymentsOptions(val description: String) {
-    UPI("UPI"),
-    NET_BANKING("Net Banking"),
-    NEFT("NEFT");
-
-    companion object {
-        fun fromDescription(description: String): OnlinePaymentsOptions {
-            return entries.find { it.description.equals(description, ignoreCase = true) }
-                ?: UPI
-        }
-    }
-}
-
-
-enum class OfflinePaymentsOptions(val description: String) {
-    CASH("CASH"),
-    BARTER("BARTER");
-
-    companion object {
-        fun fromDescription(description: String): OfflinePaymentsOptions {
-            return entries.find { it.description.equals(description, ignoreCase = true) }
-                ?: CASH
-        }
-    }
-}
-
 
 enum class ExpenseType(val description: String) {
     SELF("self"),
@@ -176,13 +145,6 @@ enum class ExpenseQuantityUnitsOptions(private val label: String) {
     Cm("Centimeter"),
     Inch("Inch"),
     Ft("Foot"),
-    SqMeter("Square Meter"),
-    SqFt("Square Foot"),
-    Pack("Pack"),
-    Box("Box"),
-    Set("Set"),
-    Bundle("Bundle"),
-    Roll("Roll"),
     Other("Other");
 
     companion object {

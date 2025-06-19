@@ -26,14 +26,14 @@ class UpdateExpenseUseCase @Inject constructor(
 ): ApiUseCase<ApiResponseResource<Any>, ExpenseUpdateDeleteRequestPostData> {
     override suspend fun execute(args: ExpenseUpdateDeleteRequestPostData?): ApiResponseResource<Any> {
         return (args?.let {
-            args.id?.let { expenseId ->
+            args.expenseCreationId?.let { expenseCreationId ->
                 args.expenseRequestData?.let { expenseRequest ->
-                    (expenseId to expenseRequest)
+                    (expenseCreationId to expenseRequest)
                 }
-            }?.let { (expenseId, expenseRequest) ->
+            }?.let { (expenseCreationId, expenseRequest) ->
                 catchWrapper {
                     repository.updateExpense(
-                        expenseId = expenseId,
+                        expenseCreationId = expenseCreationId,
                         expenseRequestDto = expenseRequest
                     )
                 }
@@ -45,11 +45,11 @@ class UpdateExpenseUseCase @Inject constructor(
 
 class DeleteExpenseUseCase @Inject constructor(
     private val repository: SplitExpenseRepository,
-): ApiUseCase<ApiResponseResource<Any>, Int> {
-    override suspend fun execute(args: Int?): ApiResponseResource<Any> {
+): ApiUseCase<ApiResponseResource<Any>, String> {
+    override suspend fun execute(args: String?): ApiResponseResource<Any> {
         return (args?.let {
             catchWrapper { repository.deleteExpense(
-                expenseId = args) }
+                expenseCreationId = args) }
         } ?: ApiResponseResource.Error("Invalid req.") )
     }
 }

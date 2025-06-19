@@ -100,7 +100,10 @@ data class GroupExpenseResponseDto(
                 val groupId: Int,
 
                 @SerializedName("created_on")
-                val createdOn: String
+                val createdOn: String,
+
+                @SerializedName("eCreationId")
+                val eCreationId: String
             ) : Parcelable
         }
 
@@ -119,36 +122,49 @@ data class GroupExpenseResponseDto(
     }
 
     fun getTotalExpense(): Int {
-        return collaborators?.sumOf { collaborator ->
-            collaborator?.expenses?.let { expense ->
-                (expense.self + expense.lend + expense.owe)
-                    .distinctBy { it.expenseForCollaborator }
-                    .size
+        return collaborators
+            ?.filterNotNull()
+            ?.sumOf { collaborator ->
+                buildList {
+                    collaborator.expenses?.self?.let { addAll(it) }
+                    collaborator.expenses?.lend?.let { addAll(it) }
+                    collaborator.expenses?.owe?.let { addAll(it) }
+                }
+                .distinctBy { it.expenseForCollaborator }
+                .size
             } ?: 0
-        } ?: 0
-    }
-
-
-    fun getTotalExpenseValue(): Double {
-        return collaborators?.sumOf {
-            it?.expenses?.let { expense -> (expense.self.sumOf { selfAmt -> selfAmt.eAmt }) + (expense.lend.sumOf { lendAmt -> lendAmt.eAmt }) + (expense.owe.sumOf { oweAmt -> oweAmt.eAmt }) }
-                ?: 0.0
-        } ?: 0.0
     }
 
     fun getTotalExpenseById(collaboratorId: Int?): Int {
-        return collaborators?.firstOrNull { collaborator -> collaborator?.id == collaboratorId }?.let { collaborator ->
-            collaborator.expenses?.let { expense -> expense.self.size + expense.lend.size + expense.owe.size } ?: 0
-        } ?: 0
+        return collaborators
+            ?.firstOrNull { it?.id == collaboratorId }
+            ?.expenses
+            ?.let { expenses ->
+                val allExpenses = buildList {
+                    addAll(expenses.self)
+                    addAll(expenses.lend)
+                    addAll(expenses.owe)
+                }
+                allExpenses.distinctBy { it.eCreationId }.size
+            } ?: 0
     }
 
-    fun getTotalExpenseValueById(collaboratorId: Int?): Double =
-        (collaborators?.firstOrNull { collaborator -> collaborator?.id == collaboratorId }?.let { collaborator ->
-            collaborator.expenses?.let { expense -> (expense.self.sumOf { selfAmt -> selfAmt.eAmt }) + (expense.lend.sumOf { lendAmt -> lendAmt.eAmt }) + (expense.owe.sumOf { oweAmt -> oweAmt.eAmt }) }
-                ?: 0.0
-        } ?: 0.0).let { total ->
-            String.format(Locale.ROOT,"%.2f", total).toDouble()
-        }
+    fun getTotalExpenseValueById(collaboratorId: Int?): Double {
+        val total = collaborators
+            ?.firstOrNull { it?.id == collaboratorId }
+            ?.expenses
+            ?.let { expenses ->
+                buildList {
+                    addAll(expenses.self)
+                    addAll(expenses.lend)
+                    addAll(expenses.owe)
+                }
+                .distinctBy { it.eCreationId }
+                .sumOf { it.eRawAmt }
+            } ?: 0.0
+
+        return String.format(Locale.ROOT, "%.2f", total).toDouble()
+    }
 
     fun getCollaboratorName(id:Int): String?
     = collaborators?.firstOrNull { it?.id == id }?.let { collaborator ->

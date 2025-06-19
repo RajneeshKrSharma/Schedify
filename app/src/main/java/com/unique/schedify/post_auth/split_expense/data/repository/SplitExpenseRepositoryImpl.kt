@@ -55,18 +55,18 @@ class SplitExpenseRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateExpense(
-        expenseId: Int,
+        expenseCreationId: String,
         expenseRequestDto: ExpenseRequestDto
     ): Response<Any> {
         return splitExpenseApis.updateExpense(
-            expenseId = expenseId,
+            expenseCreationId = expenseCreationId,
             expenseRequestDto = expenseRequestDto
         )
     }
 
-    override suspend fun deleteExpense(expenseId: Int): Response<Any> {
+    override suspend fun deleteExpense(expenseCreationId: String): Response<Any> {
         return splitExpenseApis.deleteExpense(
-            expenseId = expenseId
+            expenseCreationId = expenseCreationId
         )
     }
 }

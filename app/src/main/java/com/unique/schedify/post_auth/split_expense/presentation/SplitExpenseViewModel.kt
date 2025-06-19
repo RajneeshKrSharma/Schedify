@@ -20,12 +20,13 @@ import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseR
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupUpdateDeleteRequestPostData
 import com.unique.schedify.post_auth.split_expense.data.remote.other.UpdateDeleteInfoModel
 import com.unique.schedify.post_auth.split_expense.domain.use_case.DeleteCollaboratorUseCase
+import com.unique.schedify.post_auth.split_expense.domain.use_case.DeleteExpenseUseCase
 import com.unique.schedify.post_auth.split_expense.domain.use_case.DeleteGroupUseCase
 import com.unique.schedify.post_auth.split_expense.domain.use_case.SaveExpenseUseCase
 import com.unique.schedify.post_auth.split_expense.domain.use_case.UpdateCollaboratorUseCase
+import com.unique.schedify.post_auth.split_expense.domain.use_case.UpdateExpenseUseCase
 import com.unique.schedify.post_auth.split_expense.domain.use_case.UpdateGroupUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,6 +41,8 @@ class SplitExpenseViewModel @Inject constructor(
     private val sharedPrefConfig: SharedPrefConfig,
     private val updateGroupUseCase: UpdateGroupUseCase,
     private val deleteGroupUseCase: DeleteGroupUseCase,
+    private val updateExpenseUseCase: UpdateExpenseUseCase,
+    private val deleteExpenseUseCase: DeleteExpenseUseCase,
 ) : ViewModel() {
     private val _getAllGroupDetails = mutableStateOf<Resource<List<GroupExpenseResponseDto>>>(Resource.Default())
     val getAllGroupDetails: State<Resource<List<GroupExpenseResponseDto>>> = _getAllGroupDetails
@@ -241,34 +244,35 @@ class SplitExpenseViewModel @Inject constructor(
                     }
                 }
                 ExpenseState.UPDATE -> {
-                    /*_expenseState.value = Resource.Loading()
+                    _expenseState.value = Resource.Loading()
                     with(updateExpenseUseCase.execute(
                         args = expenseUpdateDeleteRequestPostData
                     )) {
                         when (this) {
                             is ApiResponseResource.Success -> {
                                 getSplitExpenseData()
+                                _expenseState.value = Resource.Success("Expense Updated Successfully")
                             }
 
                             is ApiResponseResource.Error -> {
-                                _groupState.value = Resource.Error(this.errorMessage)
+                                _expenseState.value = Resource.Error(this.errorMessage)
                             }
                         }
-                    }*/
+                    }
                 }
                 ExpenseState.DELETE -> {
                     _expenseState.value = Resource.Loading()
-                    with(deleteGroupUseCase.execute(
-                        args = expenseUpdateDeleteRequestPostData?.id
+                    with(deleteExpenseUseCase.execute(
+                        args = expenseUpdateDeleteRequestPostData?.expenseCreationId
                     )) {
                         when (this) {
                             is ApiResponseResource.Success -> {
                                 getSplitExpenseData()
-                                _expenseState.value = Resource.Success("")
+                                _expenseState.value = Resource.Success("Expense Deleted Successfully")
                             }
 
                             is ApiResponseResource.Error -> {
-                                _groupState.value = Resource.Error(this.errorMessage)
+                                _expenseState.value = Resource.Error(this.errorMessage)
                             }
                         }
                     }
@@ -326,9 +330,9 @@ class SplitExpenseViewModel @Inject constructor(
         Log.d("Rajneesh", "Filtered Collaborators: $filteredCollaborators")
     }*/
 
-    fun performCollaboratorUpdateOrDelete(
+    fun performCollaboratorAlteringActions(
         perform: Any,
-        collaborator: Collaborator
+        collaborator: Collaborator? = null
     ) {
         _updateDeleteInfoState.value = UpdateDeleteInfoModel(
             perform = perform,
@@ -336,9 +340,9 @@ class SplitExpenseViewModel @Inject constructor(
         )
     }
 
-    fun performGroupUpdateOrDelete(
+    fun performGroupAlteringActions(
         perform: Any,
-        groupExpenseResponseDto: GroupExpenseResponseDto
+        groupExpenseResponseDto: GroupExpenseResponseDto?= null
     ) {
         _updateDeleteInfoState.value = UpdateDeleteInfoModel(
             perform = perform,
@@ -346,9 +350,9 @@ class SplitExpenseViewModel @Inject constructor(
         )
     }
 
-    fun performExpenseUpdateOrDelete(
+    fun performExpenseAlteringActions(
         perform: Any,
-        expense: Collaborator.AllExpenses.Expense
+        expense: Collaborator.AllExpenses.Expense? = null
     ) {
         _updateDeleteInfoState.value = UpdateDeleteInfoModel(
             perform = perform,

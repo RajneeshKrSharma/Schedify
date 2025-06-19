@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -35,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import com.unique.schedify.core.presentation.common_composables.FormBuilder
 import com.unique.schedify.core.presentation.common_composables.FormField
 import com.unique.schedify.core.presentation.common_composables.GradientButton
+import com.unique.schedify.core.presentation.common_composables.ImageWithLoadingIndicator
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 
 @Composable
@@ -137,8 +139,9 @@ private fun SheetContent(
 
 @Composable
 fun EmptyDataUi(
-    image: Int,
+    imageUrl: String,
     msg: String,
+    modifier: Modifier = Modifier,
     content: @Composable (() -> Unit)? = null,
 ) {
     Box(
@@ -152,12 +155,12 @@ fun EmptyDataUi(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Image(
-                modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .aspectRatio(1f),
-                painter = painterResource(image),
-                contentDescription = "Add"
+            ImageWithLoadingIndicator(
+                imageUrl = imageUrl,
+                modifier = Modifier.wrapContentSize(),
+                imageModifier = modifier
+                    .fillMaxWidth()
+                    .weight(0.85f),
             )
             Spacer(modifier = Modifier.height(dp16))
             Text(

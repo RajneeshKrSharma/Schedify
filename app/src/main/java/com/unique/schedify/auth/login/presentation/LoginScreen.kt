@@ -217,7 +217,7 @@ fun LoginScreen(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         DashedDivider(
-                                            dividerModifier = Modifier
+                                            modifier = Modifier
                                                 .weight(0.5f),
                                             dividerColor = MaterialTheme.colorScheme.inversePrimary
                                         )
@@ -227,7 +227,7 @@ fun LoginScreen(
                                                 MaterialTheme.colorScheme.inversePrimary
                                             ))
                                         DashedDivider(
-                                            dividerModifier = Modifier
+                                            modifier = Modifier
                                                 .weight(0.5f),
                                             dividerColor = MaterialTheme.colorScheme.inversePrimary
                                         )
