@@ -57,8 +57,7 @@ abstract class ListUi {
                             modifier = Modifier
                                 .padding(start = dp16, top = dp16),
                             text = stringResource(R.string.the_faves_picks_for_you),
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontSize = sp24,
+                            style = MaterialTheme.typography.titleLarge.copy(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                         )
@@ -69,23 +68,14 @@ abstract class ListUi {
                             modifier = Modifier.weight(0.45f),
                             carouselData
                         )
-
-                        ListUiComposable(
-                            modifier = Modifier.weight(0.55f),
-                            title = listUiTitle,
-                            navController = navController
-                        )
                     }
                 }
 
-                if (listOfCarouselData() == null) {
-                    ListUiComposable(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        title = listUiTitle,
-                        navController = navController
-                    )
-                }
+                ListUiComposable(
+                    modifier = Modifier.weight(0.55f),
+                    title = listUiTitle,
+                    navController = navController
+                )
             }
             content?.invoke()
         }
@@ -103,8 +93,7 @@ abstract class ListUi {
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontSize = sp24,
+                style = MaterialTheme.typography.titleLarge.copy(
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     shadow = Shadow(
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -121,13 +110,13 @@ abstract class ListUi {
                     listOfScreens = listOfCellDetails()
                 ) { selectedScreenOption ->
                     Navigation.navigateToScreen(
-                        navigateTo = selectedScreenOption, 
+                        navigateTo = selectedScreenOption,
                         navController = navController
                     )
                 }
             else {
                 EmptyDataUi(
-                    R.drawable.schedify,
+                    imageUrl = "",
                     msg = stringResource(R.string.listofcelldetails_is_null),
                 )
             }

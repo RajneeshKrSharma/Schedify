@@ -19,6 +19,9 @@ import com.unique.schedify.core.presentation.common_composables.ActionIcons
 import com.unique.schedify.core.presentation.common_composables.CellUiDetails
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp8
+import com.unique.schedify.core.presentation.utils.size_units.sp18
+import com.unique.schedify.core.presentation.utils.size_units.sp20
+import com.unique.schedify.core.presentation.utils.size_units.sp24
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 
 
@@ -77,6 +80,7 @@ fun HomeScreenAppBar(
         title = { Text(
             text = stringResource(R.string.hi, userName),
             style = MaterialTheme.typography.headlineSmall.copy(
+                fontSize = sp20,
                 color = MaterialTheme.colorScheme.primary,
             )
         ) },

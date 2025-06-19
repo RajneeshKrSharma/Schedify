@@ -108,10 +108,20 @@ fun FormBuilder(
                         label = { RequiredLabel(field.label, isActuallyRequired) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.primary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
                             unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
                             disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
                             errorIndicatorColor = MaterialTheme.colorScheme.secondary,
                             cursorColor = MaterialTheme.colorScheme.primary
@@ -131,10 +141,20 @@ fun FormBuilder(
                         label = { RequiredLabel(field.label, isActuallyRequired) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.primary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
                             unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
                             disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
                             errorIndicatorColor = MaterialTheme.colorScheme.secondary,
                             cursorColor = MaterialTheme.colorScheme.primary
@@ -164,10 +184,20 @@ fun FormBuilder(
                         label = { RequiredLabel(field.label, isActuallyRequired) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.primary,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
                             unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.5f
+                            ),
                             disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
                             errorIndicatorColor = MaterialTheme.colorScheme.secondary,
                             cursorColor = MaterialTheme.colorScheme.primary
@@ -247,7 +277,27 @@ fun FormBuilder(
                             modifier = Modifier.fillMaxWidth(),
                             trailingIcon = {
                                 Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                            }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = MaterialTheme.colorScheme.primary,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                    alpha = 0.5f
+                                ),
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                    alpha = 0.5f
+                                ),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                    alpha = 0.5f
+                                ),
+                                disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+                                errorIndicatorColor = MaterialTheme.colorScheme.secondary,
+                                cursorColor = MaterialTheme.colorScheme.primary
+                            )
+
                         )
                         DropdownMenu(
                             expanded = expanded,

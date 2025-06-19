@@ -1,12 +1,14 @@
 package com.unique.schedify.post_auth.split_expense.presentation
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -26,6 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -46,7 +50,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
@@ -57,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.unique.schedify.R
+import com.unique.schedify.core.presentation.common_composables.ActionIcons
 import com.unique.schedify.core.presentation.common_composables.CustomChip
 import com.unique.schedify.core.presentation.common_composables.CustomDialog
 import com.unique.schedify.core.presentation.common_composables.DashedDivider
@@ -64,9 +68,8 @@ import com.unique.schedify.core.presentation.common_composables.LoadingUi
 import com.unique.schedify.core.presentation.utils.size_units.dp1
 import com.unique.schedify.core.presentation.utils.size_units.dp12
 import com.unique.schedify.core.presentation.utils.size_units.dp16
-import com.unique.schedify.core.presentation.utils.size_units.dp2
+import com.unique.schedify.core.presentation.utils.size_units.dp24
 import com.unique.schedify.core.presentation.utils.size_units.dp4
-import com.unique.schedify.core.presentation.utils.size_units.dp60
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.util.Resource
 import com.unique.schedify.post_auth.post_auth_utils.CollaboratorAlterState
@@ -102,15 +105,20 @@ fun LoadCollaboratorScreen(
 
     val context = LocalContext.current
 
-    val addCollaboratorBottomSheetState = androidx.compose.material.rememberModalBottomSheetState(
+    val addCollaboratorBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        confirmValueChange = { newValue ->
+            newValue != ModalBottomSheetValue.Hidden
+        }
     )
 
-    val editCollaboratorBottomSheetState = androidx.compose.material.rememberModalBottomSheetState(
+    val editCollaboratorBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        confirmValueChange = { newValue ->
+            newValue != ModalBottomSheetValue.Hidden
+        }
     )
+
     val coroutine = rememberCoroutineScope()
 
     val updateDeleteData = splitExpenseViewModel.updateDeleteInfoState.value
@@ -126,9 +134,9 @@ fun LoadCollaboratorScreen(
             appBarActions = {
                 CollaboratorTopBarActions(
                     addCollaboratorButtonClicked = {
-                        coroutine.launch {
-                            addCollaboratorBottomSheetState.show()
-                        }
+                        splitExpenseViewModel.performCollaboratorAlteringActions(
+                            perform = CollaboratorState.CREATE
+                        )
                     }
                 )
             }
@@ -142,10 +150,15 @@ fun LoadCollaboratorScreen(
                         coroutine.launch {
                             editCollaboratorBottomSheetState.show()
                         }
+                    },
+                    addCollaboratorButtonClicked = {
+                        coroutine.launch {
+                            addCollaboratorBottomSheetState.show()
+                        }
                     }
                 )
             } ?: EmptyDataUi(
-                image = R.drawable.split_expense_icon,
+                imageUrl = "https://schedify.pythonanywhere.com/media/pictures/split_expense_list.png",
                 msg = "No Data Found"
             )
 
@@ -153,70 +166,75 @@ fun LoadCollaboratorScreen(
         FilterUi()
 
         // Put your ui codes like dialogs / bottomSheets
-        updateDeleteData.collaborator?.let { updateDeleteNotNullData ->
+
+        updateDeleteData.takeIf { data -> data.perform == CollaboratorState.CREATE }?.let {
             GenericBottomSheet(
-                sheetState = editCollaboratorBottomSheetState,
-                headingTitleText = stringResource(R.string.update,
-                    stringResource(R.string.collaborator)),
-                buttonText = stringResource(R.string.update),
-                formInputDataFields = buildEditCollaboratorFormFields(
-                    collaborator = updateDeleteNotNullData
-                ),
+                sheetState = addCollaboratorBottomSheetState,
+                headingTitleText = stringResource(R.string.add_collaborator),
+                buttonText = stringResource(R.string.add),
+                formInputDataFields = buildAddCollaboratorFormFields(),
                 formOutputData = { data ->
-                    (data.let { validRequestData ->
+                    data.let { validRequestData ->
                         prepareCollaboratorRequest(
-                            collaborator = updateDeleteNotNullData,
                             value = validRequestData,
                             grpItem = grpItem,
-                            alteringState = CollaboratorAlterState.UPDATE
-                        ).let { request ->
+                            alteringState = CollaboratorAlterState.CREATE
+                        ).let {
+                                request ->
                             if(request != CollaboratorRequestDto.empty()) {
                                 splitExpenseViewModel.startCollaboratorChosenProcess(
-                                    collaboratorState = CollaboratorState.UPDATE,
+                                    collaboratorState = CollaboratorState.CREATE,
                                     collaboratorRequestDto = request
                                 )
                             }
                         }
-                    })
+                    }
                 },
                 dismissSheet = {
                     coroutine.launch {
                         splitExpenseViewModel.resetUpdateOrDeleteState()
-                        editCollaboratorBottomSheetState.hide()
+                        addCollaboratorBottomSheetState.hide()
                     }
                 }
             )
         }
 
-        GenericBottomSheet(
-            sheetState = addCollaboratorBottomSheetState,
-            headingTitleText = stringResource(R.string.add_collaborator),
-            buttonText = stringResource(R.string.add),
-            formInputDataFields = buildAddCollaboratorFormFields(),
-            formOutputData = { data ->
-                data.let { validRequestData ->
-                    prepareCollaboratorRequest(
-                        value = validRequestData,
-                        grpItem = grpItem,
-                        alteringState = CollaboratorAlterState.CREATE
-                    ).let {
-                            request ->
-                        if(request != CollaboratorRequestDto.empty()) {
-                            splitExpenseViewModel.startCollaboratorChosenProcess(
-                                collaboratorState = CollaboratorState.CREATE,
-                                collaboratorRequestDto = request
-                            )
+        updateDeleteData.takeIf { data -> data.perform == CollaboratorState.UPDATE}?.let {
+            updateDeleteData.collaborator?.let { updateDeleteNotNullData ->
+                GenericBottomSheet(
+                    sheetState = editCollaboratorBottomSheetState,
+                    headingTitleText = stringResource(R.string.update,
+                        stringResource(R.string.collaborator)),
+                    buttonText = stringResource(R.string.update_text),
+                    formInputDataFields = buildEditCollaboratorFormFields(
+                        collaborator = updateDeleteNotNullData
+                    ),
+                    formOutputData = { data ->
+                        (data.let { validRequestData ->
+                            prepareCollaboratorRequest(
+                                collaborator = updateDeleteNotNullData,
+                                value = validRequestData,
+                                grpItem = grpItem,
+                                alteringState = CollaboratorAlterState.UPDATE
+                            ).let { request ->
+                                if(request != CollaboratorRequestDto.empty()) {
+                                    splitExpenseViewModel.startCollaboratorChosenProcess(
+                                        collaboratorState = CollaboratorState.UPDATE,
+                                        collaboratorRequestDto = request
+                                    )
+                                }
+                            }
+                        })
+                    },
+                    dismissSheet = {
+                        coroutine.launch {
+                            splitExpenseViewModel.resetUpdateOrDeleteState()
+                            editCollaboratorBottomSheetState.hide()
                         }
                     }
-                }
-            },
-            dismissSheet = {
-                coroutine.launch {
-                    splitExpenseViewModel.resetUpdateOrDeleteState()
-                    addCollaboratorBottomSheetState.hide()
-                }
+                )
             }
-        )
+        }
 
         with(splitExpenseViewModel) {
             // listen to state changes for collaborator apis call
@@ -247,48 +265,21 @@ fun LoadCollaboratorScreen(
 fun CollaboratorTopBarActions(
     addCollaboratorButtonClicked:(()->Unit)
 ) {
-    Box(
+
+    ActionIcons(
         modifier = Modifier
-            .wrapContentSize()
-            .clip(RoundedCornerShape(dp60))
-            .background(MaterialTheme.colorScheme.primary)
-            .clickable {
-                addCollaboratorButtonClicked.invoke()
-            }
-        ,
-        contentAlignment = Alignment.Center
+            .padding(horizontal = dp16)
+            .clip(RoundedCornerShape(dp24))
+            .background(color = MaterialTheme.colorScheme.primary)
+            .border(
+                BorderStroke(dp1, MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(dp24)
+            ),
+        iconImage = painterResource(R.drawable.add_collaborator),
+        iconText = stringResource(R.string.add),
+        textColor = MaterialTheme.colorScheme.onSecondaryContainer
     ) {
-        Row(
-            modifier = Modifier
-                .padding(dp12),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                modifier = Modifier
-                    .width(dp16)
-                    .height(dp16),
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSecondaryContainer),
-                painter = painterResource(R.drawable.add_collaborator),
-                contentDescription = stringResource(R.string.add_collaborator))
-            Spacer(modifier = Modifier.width(dp8))
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text= stringResource(R.string.add),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                )
-                Text(
-                    text= stringResource(R.string.collaborator),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                )
-            }
-        }
+        addCollaboratorButtonClicked.invoke()
     }
 
 }
@@ -299,27 +290,34 @@ fun CollaboratorDetailsUi(
     splitExpenseViewModel: SplitExpenseViewModel,
     navController: NavController,
     editCollaboratorCallback:() -> Unit,
+    addCollaboratorButtonClicked: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(dp16)
-            .background(
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                shape = RoundedCornerShape(dp8)
-            )
     ) {
         Column(
-            modifier = Modifier.padding(dp16)
+            modifier = Modifier
+                .padding(dp16)
         ) {
             // Header consists of grp, collaborator and Add collaborator btn.
             TopHeaderUi(
                 groupItem = grpItem
             )
-
             DashedDivider(
-                dividerModifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth(),
+                vSpace = dp16
             )
+
+            grpItem.name?.let { grpName ->
+                Text(
+                    stringResource(R.string.collaborators_in, grpName),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+            }
 
             // Prepare collaborator ui
             grpItem.collaborators?.sortedBy { it?.collabUserId != splitExpenseViewModel.getAuthUserId() }
@@ -328,7 +326,7 @@ fun CollaboratorDetailsUi(
                         allCollaboratorList = collaboratorList,
                         userId = splitExpenseViewModel.getAuthUserId(),
                         performUpdateOrDeleteOperationCallback = { perform, collaborator ->
-                            splitExpenseViewModel.performCollaboratorUpdateOrDelete(
+                            splitExpenseViewModel.performCollaboratorAlteringActions(
                                 perform, collaborator
                             )
                         },
@@ -346,6 +344,10 @@ fun CollaboratorDetailsUi(
             with(splitExpenseViewModel) {
                 val state = updateDeleteInfoState.value
                 when(state.perform) {
+                    CollaboratorState.CREATE -> {
+                        addCollaboratorButtonClicked.invoke()
+                    }
+
                     CollaboratorState.UPDATE -> {
                         editCollaboratorCallback.invoke()
                     }
@@ -398,6 +400,8 @@ fun PrepareCollaboratorListUi(
 ) {
     allCollaboratorList.filterNotNull().let { allCollaborator ->
         LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
             contentPadding = PaddingValues(vertical = dp16),
             verticalArrangement = Arrangement.spacedBy(dp16)
         ) {
@@ -573,7 +577,7 @@ fun PrepareCollaboratorListUi(
                                 ) {
                                     Text(
                                         allCollaborator[index].collabName(),
-                                        style = MaterialTheme.typography.headlineSmall.copy(
+                                        style = MaterialTheme.typography.titleLarge.copy(
                                             color = MaterialTheme.colorScheme.onPrimaryContainer
                                         )
                                     )
@@ -581,10 +585,9 @@ fun PrepareCollaboratorListUi(
 
                                 Spacer(modifier = Modifier.height(dp16))
 
-
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                Box(
                                     modifier = Modifier
+                                        .wrapContentSize()
                                         .height(IntrinsicSize.Min)
                                         .drawBehind {
                                             val stroke = Stroke(
@@ -606,102 +609,165 @@ fun PrepareCollaboratorListUi(
                                                 ),
                                                 style = stroke
                                             )
-                                        }
-                                        .padding(dp8),
+                                        },
                                 ) {
-                                    Text(
-                                        stringResource(R.string.your_expenses_are_listed_below),
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                                        )
-                                    )
-
-                                    Spacer(modifier = Modifier.padding(bottom = dp8))
-
-                                    Row(
+                                    Column(
+                                        horizontalAlignment = Alignment.Start,
+                                        verticalArrangement = Arrangement.SpaceEvenly,
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(IntrinsicSize.Min),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
+                                            .wrapContentSize()
+                                            .padding(dp8),
                                     ) {
                                         Text(
-                                            modifier = Modifier.padding(dp4),
-                                            text = ExpenseNomenclature.SELF.description,
-                                            style = MaterialTheme.typography.labelMedium.copy(
-                                                color = MaterialTheme.colorScheme.inversePrimary
-                                            ),
-                                        )
-
-                                        Text(
-                                            modifier = Modifier.padding(dp4),
-                                            text = stringResource(
-                                                R.string.rupee_symbol,
-                                                allCollaborator[index].expenses?.self?.sumOf { it.eAmt }
-                                                    ?: 0),
-                                            style = MaterialTheme.typography.labelMedium.copy(
+                                            stringResource (R.string.your_expenses_are_listed_below),
+                                            style = MaterialTheme.typography.bodyMedium.copy(
                                                 color = MaterialTheme.colorScheme.onPrimaryContainer
-                                            ),
+                                            )
                                         )
+
+                                        Spacer(modifier = Modifier.height(dp12))
+
+                                        FlowRow(
+                                            horizontalArrangement = Arrangement.spacedBy(dp8),
+                                            verticalArrangement = Arrangement.spacedBy(dp8)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(dp8))
+                                                    .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
+                                                    .border(
+                                                        BorderStroke(
+                                                            dp1,
+                                                            MaterialTheme.colorScheme.surfaceBright.copy(
+                                                                alpha = 0.7f
+                                                            )
+                                                        ),
+                                                        shape = RoundedCornerShape(dp8)
+                                                    )
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .wrapContentSize()
+                                                        .padding(dp4)
+                                                        .height(IntrinsicSize.Min),
+                                                    horizontalArrangement = Arrangement.Center,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        modifier = Modifier.padding(dp4),
+                                                        text = ExpenseNomenclature.SELF.description,
+                                                        style = MaterialTheme.typography.labelMedium.copy(
+                                                            color = MaterialTheme.colorScheme.surfaceBright.copy(
+                                                                alpha = 0.7f
+                                                            )
+                                                        ),
+                                                    )
+
+                                                    Text(
+                                                        modifier = Modifier.padding(dp4),
+                                                        text = stringResource(
+                                                            R.string.rupee_symbol,
+                                                            allCollaborator[index].expenses?.self?.sumOf { it.eAmt }
+                                                                ?: 0),
+                                                        style = MaterialTheme.typography.labelMedium.copy(
+                                                            color = MaterialTheme.colorScheme.surfaceBright
+                                                        ),
+                                                    )
+                                                }
+                                            }
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(dp8))
+                                                    .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
+                                                    .border(
+                                                        BorderStroke(
+                                                            dp1,
+                                                            MaterialTheme.colorScheme.primary.copy(
+                                                                alpha = 0.7f
+                                                            )
+                                                        ),
+                                                        shape = RoundedCornerShape(dp8)
+                                                    )
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .wrapContentSize()
+                                                        .padding(dp4)
+                                                        .height(IntrinsicSize.Min),
+                                                    horizontalArrangement = Arrangement.Center,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        modifier = Modifier.padding(dp4),
+                                                        text = ExpenseNomenclature.LEND.description,
+                                                        style = MaterialTheme.typography.labelMedium.copy(
+                                                            color = MaterialTheme.colorScheme.primary.copy(
+                                                                alpha = 0.7f
+                                                            )
+                                                        ),
+                                                    )
+
+                                                    Text(
+                                                        modifier = Modifier.padding(dp4),
+                                                        text = stringResource(
+                                                            R.string.rupee_symbol,
+                                                            allCollaborator[index].expenses?.lend?.sumOf { it.eAmt }
+                                                                ?: 0),
+                                                        style = MaterialTheme.typography.labelMedium.copy(
+                                                            color = MaterialTheme.colorScheme.primary
+                                                        ),
+                                                        textAlign = TextAlign.Start
+                                                    )
+                                                }
+                                            }
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(dp8))
+                                                    .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
+                                                    .border(
+                                                        BorderStroke(
+                                                            dp1,
+                                                            MaterialTheme.colorScheme.secondary.copy(
+                                                                alpha = 0.7f
+                                                            )
+                                                        ),
+                                                        shape = RoundedCornerShape(dp8)
+                                                    )
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .wrapContentSize()
+                                                        .padding(dp4)
+                                                        .height(IntrinsicSize.Min),
+                                                    horizontalArrangement = Arrangement.Center,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        modifier = Modifier.padding(dp4),
+                                                        text = ExpenseNomenclature.OWE.description,
+                                                        style = MaterialTheme.typography.labelMedium.copy(
+                                                            color = MaterialTheme.colorScheme.secondary.copy(
+                                                                alpha = 0.7f
+                                                            )
+                                                        ),
+                                                    )
+
+                                                    Text(
+                                                        modifier = Modifier.padding(dp4),
+                                                        text = stringResource(
+                                                            R.string.rupee_symbol,
+                                                            allCollaborator[index].expenses?.owe?.sumOf { it.eAmt }
+                                                                ?: 0),
+                                                        style = MaterialTheme.typography.labelMedium.copy(
+                                                            color = MaterialTheme.colorScheme.secondary
+                                                        ),
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
-
-                                    Spacer(modifier = Modifier.height(dp2))
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(IntrinsicSize.Min),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            modifier = Modifier.padding(dp4),
-                                            text = ExpenseNomenclature.LEND.description,
-                                            style = MaterialTheme.typography.labelMedium.copy(
-                                                color = MaterialTheme.colorScheme.inversePrimary
-                                            ),
-                                        )
-
-                                        Text(
-                                            modifier = Modifier.padding(dp4),
-                                            text = stringResource(
-                                                R.string.rupee_symbol,
-                                                allCollaborator[index].expenses?.lend?.sumOf { it.eAmt } ?: 0),
-                                            style = MaterialTheme.typography.labelMedium.copy(
-                                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                                            ),
-                                            textAlign = TextAlign.Start
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(dp2))
-
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(IntrinsicSize.Min),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            modifier = Modifier.padding(dp4),
-                                            text = ExpenseNomenclature.OWE.description,
-                                            style = MaterialTheme.typography.labelMedium.copy(
-                                                color = MaterialTheme.colorScheme.inversePrimary
-                                            ),
-                                        )
-
-                                        Text(
-                                            modifier = Modifier.padding(dp4),
-                                            text = stringResource(
-                                                R.string.rupee_symbol,
-                                                allCollaborator[index].expenses?.owe?.sumOf { it.eAmt } ?: 0),
-                                            style = MaterialTheme.typography.labelMedium.copy(
-                                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                                            ),
-                                        )
-                                    }
-
                                 }
                             }
                         }

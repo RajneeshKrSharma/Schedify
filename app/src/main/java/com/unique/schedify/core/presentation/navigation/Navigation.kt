@@ -58,4 +58,8 @@ object Navigation {
             }
         }
     }
+
+    fun navigateBack(navController: NavController) {
+        navController.popBackStack()
+    }
 }

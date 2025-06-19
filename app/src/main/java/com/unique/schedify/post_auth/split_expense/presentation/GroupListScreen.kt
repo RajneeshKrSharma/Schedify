@@ -25,6 +25,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -77,18 +79,23 @@ fun GroupListScreen(
     val context = LocalContext.current
     val stateGroupDetails = splitExpenseViewModel.getAllGroupDetails.value
 
-    val addGroupBottomSheetState = androidx.compose.material.rememberModalBottomSheetState(
+    val addGroupBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        confirmValueChange = { newValue ->
+            newValue != ModalBottomSheetValue.Hidden
+        }
     )
 
-    val updateGroupBottomSheetState = androidx.compose.material.rememberModalBottomSheetState(
+    val updateGroupBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        confirmValueChange = { newValue ->
+            newValue != ModalBottomSheetValue.Hidden
+        }
     )
+
     val coroutine = rememberCoroutineScope()
 
-    val updateDeleteData = splitExpenseViewModel.updateDeleteInfoState.value.groupExpenseResponseDto
+    val updateDeleteData = splitExpenseViewModel.updateDeleteInfoState.value
 
     SplitListScreen(
         appBarText = stringResource(R.string.groups),
@@ -97,9 +104,9 @@ fun GroupListScreen(
             stateGroupDetails.data?.takeIf { data -> data.isNotEmpty() }?.let {
                 GroupTopBarActions(
                     onAddGroupButtonClick = {
-                        coroutine.launch {
-                            addGroupBottomSheetState.show()
-                        }
+                        splitExpenseViewModel.performGroupAlteringActions(
+                            GroupState.CREATE,
+                        )
                     }
                 )
             }
@@ -120,7 +127,7 @@ fun GroupListScreen(
 
                 if (listOfGroups.isEmpty()) {
                     EmptyDataUi(
-                        image = R.drawable.add_group,
+                        imageUrl = "https://schedify.pythonanywhere.com/media/pictures/add_group.png",
                         msg = stringResource(
                             R.string.no_available_add_your_first,
                             "group",
@@ -128,9 +135,9 @@ fun GroupListScreen(
                         ),
                         content = {
                             AddGroupButton {
-                                coroutine.launch {
-                                    addGroupBottomSheetState.show()
-                                }
+                                splitExpenseViewModel.performGroupAlteringActions(
+                                    GroupState.CREATE,
+                                )
                             }
                         }
                     )
@@ -139,8 +146,6 @@ fun GroupListScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(dp8)
-                            .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
                     ) {
                         LazyColumn(
                             contentPadding = PaddingValues(dp16),
@@ -193,7 +198,7 @@ fun GroupListScreen(
                                                 Text(
                                                     listOfGroups[index].name
                                                         ?: stringResource(R.string.not_applicable),
-                                                    style = MaterialTheme.typography.headlineSmall.copy(
+                                                    style = MaterialTheme.typography.titleLarge.copy(
                                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                                     )
                                                 )
@@ -239,7 +244,7 @@ fun GroupListScreen(
                                                             },
                                                             onClick = {
                                                                 isAlterOptionMenuVisible.value = false
-                                                                splitExpenseViewModel.performGroupUpdateOrDelete(
+                                                                splitExpenseViewModel.performGroupAlteringActions(
                                                                     GroupState.UPDATE,
                                                                     groupExpenseResponseDto = listOfGroups[index]
                                                                 )
@@ -270,7 +275,7 @@ fun GroupListScreen(
                                                             },
                                                             onClick = {
                                                                 isAlterOptionMenuVisible.value = false
-                                                                splitExpenseViewModel.performGroupUpdateOrDelete(
+                                                                splitExpenseViewModel.performGroupAlteringActions(
                                                                     GroupState.DELETE,
                                                                     groupExpenseResponseDto = listOfGroups[index]
                                                                 )
@@ -313,6 +318,12 @@ fun GroupListScreen(
                         with(splitExpenseViewModel) {
                             val state = updateDeleteInfoState.value
                             when(state.perform) {
+                                GroupState.CREATE -> {
+                                    coroutine.launch {
+                                        addGroupBottomSheetState.show()
+                                    }
+                                }
+
                                 GroupState.UPDATE -> {
                                     coroutine.launch {
                                         updateGroupBottomSheetState.show()
@@ -372,53 +383,22 @@ fun GroupListScreen(
             }
         }
 
-        GenericBottomSheet(
-            sheetState = addGroupBottomSheetState,
-            headingTitleText = stringResource(R.string.add_group),
-            buttonText = "Add",
-            formInputDataFields = buildAddGroupFormFields(),
-            formOutputData = { data ->
-                data.let { validRequestData ->
-                    prepareGroupRequest(
-                        value = validRequestData,
-                        alteringState = GroupAlterState.CREATE
-                    ).let { request ->
-                        if(request != GroupRequestDto.empty()) {
-                            splitExpenseViewModel.startGroupChosenProcess(
-                                groupState = GroupState.CREATE,
-                                groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
-                                    groupRequestData = request
-                                )
-                            )
-                        }
-                    }
-                }
-            },
-            dismissSheet = {
-                coroutine.launch {
-                    addGroupBottomSheetState.hide()
-                }
-            }
-        )
-
-        updateDeleteData?.let { updateDeleteNotNullData ->
+        updateDeleteData.takeIf { data -> data.perform == GroupState.CREATE }?.let {
             GenericBottomSheet(
-                sheetState = updateGroupBottomSheetState,
-                headingTitleText = stringResource(R.string.update,
-                    stringResource(R.string.group_simple)),
-                buttonText = stringResource(R.string.update),
-                formInputDataFields = buildUpdateGroupFormFields(updateDeleteNotNullData),
+                sheetState = addGroupBottomSheetState,
+                headingTitleText = stringResource(R.string.add_group),
+                buttonText = "Add",
+                formInputDataFields = buildAddGroupFormFields(),
                 formOutputData = { data ->
                     data.let { validRequestData ->
                         prepareGroupRequest(
                             value = validRequestData,
-                            alteringState = GroupAlterState.UPDATE
+                            alteringState = GroupAlterState.CREATE
                         ).let { request ->
                             if(request != GroupRequestDto.empty()) {
                                 splitExpenseViewModel.startGroupChosenProcess(
-                                    groupState = GroupState.UPDATE,
+                                    groupState = GroupState.CREATE,
                                     groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
-                                        id = updateDeleteNotNullData.id,
                                         groupRequestData = request
                                     )
                                 )
@@ -429,10 +409,46 @@ fun GroupListScreen(
                 dismissSheet = {
                     coroutine.launch {
                         splitExpenseViewModel.resetUpdateOrDeleteState()
-                        updateGroupBottomSheetState.hide()
+                        addGroupBottomSheetState.hide()
                     }
                 }
             )
+        }
+
+        updateDeleteData.takeIf { data -> data.perform == GroupState.UPDATE }?.let {
+            updateDeleteData.groupExpenseResponseDto?.let { updateDeleteNotNullData ->
+                GenericBottomSheet(
+                    sheetState = updateGroupBottomSheetState,
+                    headingTitleText = stringResource(R.string.update,
+                        stringResource(R.string.group_simple)),
+                    buttonText = stringResource(R.string.update),
+                    formInputDataFields = buildUpdateGroupFormFields(updateDeleteNotNullData),
+                    formOutputData = { data ->
+                        data.let { validRequestData ->
+                            prepareGroupRequest(
+                                value = validRequestData,
+                                alteringState = GroupAlterState.UPDATE
+                            ).let { request ->
+                                if(request != GroupRequestDto.empty()) {
+                                    splitExpenseViewModel.startGroupChosenProcess(
+                                        groupState = GroupState.UPDATE,
+                                        groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
+                                            id = updateDeleteNotNullData.id,
+                                            groupRequestData = request
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    dismissSheet = {
+                        coroutine.launch {
+                            splitExpenseViewModel.resetUpdateOrDeleteState()
+                            updateGroupBottomSheetState.hide()
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -450,6 +466,7 @@ fun AddGroupButton(
 ) {
     ActionIcons(
         modifier = Modifier
+            .padding(horizontal = dp16)
             .clip(RoundedCornerShape(dp24))
             .background(color = MaterialTheme.colorScheme.primary)
             .border(

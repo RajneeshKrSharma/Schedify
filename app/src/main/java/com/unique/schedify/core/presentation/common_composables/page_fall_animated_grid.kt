@@ -47,16 +47,23 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.unique.schedify.R
+import com.unique.schedify.core.presentation.utils.size_units.dp0
 import com.unique.schedify.core.presentation.utils.size_units.dp10
+import com.unique.schedify.core.presentation.utils.size_units.dp12
 import com.unique.schedify.core.presentation.utils.size_units.dp120
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp4
 import com.unique.schedify.core.presentation.utils.size_units.dp8
+import com.unique.schedify.core.presentation.utils.size_units.sp1
 import com.unique.schedify.core.presentation.utils.size_units.sp12
+import com.unique.schedify.core.presentation.utils.size_units.sp14
 import com.unique.schedify.core.presentation.utils.size_units.sp20
 import com.unique.schedify.core.presentation.utils.size_units.sp50
+import com.unique.schedify.core.presentation.utils.size_units.sp6
+import com.unique.schedify.core.presentation.utils.size_units.sp8
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import kotlinx.coroutines.delay
 
@@ -223,10 +230,10 @@ fun PageFallAnimatedList(
                             modifier = Modifier
                                 .weight(0.6f)
                                 .fillMaxHeight()
-                                .padding(start = dp16),
+                                .padding(start = dp12),
                             verticalArrangement = Arrangement.SpaceEvenly,
                         ) {
-                            Column {
+                            Column() {
                                 Text(
                                     modifier = Modifier,
                                     text = item.text,
@@ -244,6 +251,7 @@ fun PageFallAnimatedList(
                                         modifier = Modifier,
                                         text = desc,
                                         style = MaterialTheme.typography.bodyLarge.copy(
+                                            lineHeight = sp14,
                                             fontSize = sp12,
                                             color = MaterialTheme.colorScheme.onPrimaryContainer
                                         )
@@ -257,8 +265,7 @@ fun PageFallAnimatedList(
                                 Text(
                                     modifier = Modifier,
                                     text = stringResource(R.string.explore),
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        fontSize = sp20,
+                                    style = MaterialTheme.typography.labelMedium.copy(
                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 )
@@ -266,7 +273,10 @@ fun PageFallAnimatedList(
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowForward,
                                     contentDescription = "",
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier
+                                        .width(dp16)
+                                        .height(dp16),
                                 )
                             }
                         }

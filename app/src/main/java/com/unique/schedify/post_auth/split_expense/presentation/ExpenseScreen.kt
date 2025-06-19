@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.rememberModalBottomSheetState
@@ -32,13 +33,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -63,9 +64,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.navigation.NavController
 import com.unique.schedify.R
-import com.unique.schedify.core.presentation.base_composables.BaseCompose
 import com.unique.schedify.core.presentation.common_composables.ActionIcons
 import com.unique.schedify.core.presentation.common_composables.CustomChip
+import com.unique.schedify.core.presentation.common_composables.CustomDialog
 import com.unique.schedify.core.presentation.common_composables.DashedDivider
 import com.unique.schedify.core.presentation.common_composables.LoadingUi
 import com.unique.schedify.core.presentation.common_composables.StaticChips
@@ -83,16 +84,20 @@ import com.unique.schedify.core.util.Resource
 import com.unique.schedify.core.util.date_utils.formattedServerDateTime
 import com.unique.schedify.post_auth.post_auth_utils.ExpenseAlterState
 import com.unique.schedify.post_auth.post_auth_utils.ExpenseState
+import com.unique.schedify.post_auth.post_auth_utils.ExpenseType
+import com.unique.schedify.post_auth.split_expense.data.remote.dto.ExpenseRequestDto
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.ExpenseUpdateDeleteRequestPostData
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
 import com.unique.schedify.post_auth.split_expense.presentation.utils.EmptyDataUi
 import com.unique.schedify.post_auth.split_expense.presentation.utils.ExpenseNomenclature
 import com.unique.schedify.post_auth.split_expense.presentation.utils.GenericBottomSheet
 import com.unique.schedify.post_auth.split_expense.presentation.utils.buildAddExpenseFormFields
+import com.unique.schedify.post_auth.split_expense.presentation.utils.buildEditExpenseFormFields
+import com.unique.schedify.post_auth.split_expense.presentation.utils.getColorForExpenseNomenclature
+import com.unique.schedify.post_auth.split_expense.presentation.utils.getColorForExpenseType
 import com.unique.schedify.post_auth.split_expense.presentation.utils.prepareExpenseRequest
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseScreen(
     navController: NavController,
@@ -119,142 +124,139 @@ fun ExpenseScreen(
 
     val bottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        confirmValueChange = { newValue ->
+            newValue != ModalBottomSheetValue.Hidden
+        }
     )
+
     val coroutine = rememberCoroutineScope()
 
-    BaseCompose(
-        navController = navController,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.expenses),
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-                },
-                actions = {
-                    collaboratorItem?.let { clbItem ->
-                        if (clbItem.collabUserId == splitExpenseViewModel.getAuthUserId() &&
-                            clbItem.getTotalExpense() > 0
-                        ) {
-                            ExpenseTopBarActions(
-                                onButtonClick = {
-                                    coroutine.launch {
-                                        bottomSheetState.show()
-                                    }
-                                }
-                            )
-                        }
-                    }
+    val updateDeleteData = splitExpenseViewModel.updateDeleteInfoState.value
 
-                },
-                modifier = Modifier.padding(dp16)
-            )
+    val editExpenseBottomSheetState = rememberModalBottomSheetState(
+        initialValue = ModalBottomSheetValue.Hidden,
+        confirmValueChange = { newValue ->
+            newValue != ModalBottomSheetValue.Hidden
         }
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(dp16),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                collaboratorItem?.let { clbItem ->
-                    groupItem?.let { grpItem ->
-                        clbItem to grpItem
-                    }
-                }?.let { (clbItem, grpItem) ->
+    )
 
-                    Column {
-
-                        Row {
-                            CustomChip(
-                                text = "Group | ${grpItem.name}",
-                                textColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                bgColor = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            )
-
-                            Spacer(modifier = Modifier.padding(horizontal = dp4))
-
-                            CustomChip(
-                                text = "Collaborator | ${clbItem.collabName()}",
-                                textColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                bgColor = MaterialTheme.colorScheme.tertiary,
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(dp16))
-
-                        TotalExpenseDetailsUi(
-                            grpItem = grpItem,
-                            clbItem = clbItem
-                        )
-
-                        Spacer(modifier = Modifier.height(dp16))
-
-                        if (clbItem.collabUserId == splitExpenseViewModel.getAuthUserId()
-                            && clbItem.getTotalExpense() == 0
-                        ) {
-                            EmptyDataUi(
-                                image = R.drawable.add_expense,
-                                msg = "Add Your First Expense !",
-                                content = {
-                                    AddExpenseButton(
-                                        onButtonClick = {
-                                            coroutine.launch {
-                                                bottomSheetState.show()
-                                            }
-                                        }
-                                    )
-                                }
-                            )
-
-                        } else if (clbItem.collabUserId != splitExpenseViewModel.getAuthUserId() &&
-                            clbItem.getTotalExpense() == 0
-                        ) {
-                            EmptyDataUi(
-                                image = R.drawable.add_expense_normal,
-                                msg = stringResource(R.string.no_expense_available),
-                            )
-                        } else {
-                            ExpenseTabsScreen(
-                                groupItem = grpItem,
-                                expenseData =  mapOf(
-                                    "${ExpenseNomenclature.SELF.description} ( ${clbItem.expenses?.self?.size ?: 0} )" to (clbItem.expenses?.self
-                                        ?: emptyList()),
-                                    "${ExpenseNomenclature.LEND.description} ( ${clbItem.expenses?.lend?.size ?: 0} )" to (clbItem.expenses?.lend
-                                        ?: emptyList()),
-                                    "${ExpenseNomenclature.OWE.description} ( ${clbItem.expenses?.owe?.size ?: 0} )" to (clbItem.expenses?.owe
-                                        ?: emptyList())
-                                ),
-                                onDeleteOptionClicked = { expenseItem ->
-                                    splitExpenseViewModel.performExpenseUpdateOrDelete(
-                                        perform = ExpenseState.DELETE,
-                                        expense = expenseItem
-                                    )
-                                }
-                            )
-                        }
-                    }
-                } ?: Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+    SplitListScreen(
+        appBarText = stringResource(R.string.expenses),
+        navController = navController,
+        appBarActions = {
+            collaboratorItem?.let { clbItem ->
+                if (clbItem.collabUserId == splitExpenseViewModel.getAuthUserId() &&
+                    clbItem.getTotalExpense() > 0
                 ) {
-                    Text("Something went wrong")
+                    ExpenseTopBarActions(
+                        onButtonClick = {
+                            splitExpenseViewModel.performExpenseAlteringActions(
+                                perform = ExpenseState.CREATE
+                            )
+                        }
+                    )
                 }
             }
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(dp16),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            collaboratorItem?.let { clbItem ->
+                groupItem?.let { grpItem ->
+                    clbItem to grpItem
+                }
+            }?.let { (clbItem, grpItem) ->
 
+                Column {
+                    Row {
+                        CustomChip(
+                            text = "${grpItem.name}",
+                            textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            bgColor = MaterialTheme.colorScheme.onBackground,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.padding(horizontal = dp4))
+
+                        CustomChip(
+                            text = clbItem.collabName(),
+                            textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            bgColor = MaterialTheme.colorScheme.tertiary,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(dp16))
+
+                    TotalExpenseDetailsUi(
+                        grpItem = grpItem,
+                        clbItem = clbItem
+                    )
+
+                    Spacer(modifier = Modifier.height(dp16))
+
+                    if (clbItem.collabUserId == splitExpenseViewModel.getAuthUserId()
+                        && clbItem.getTotalExpense() == 0
+                    ) {
+                        EmptyDataUi(
+                            imageUrl = "https://schedify.pythonanywhere.com/media/pictures/add_expense.png",
+                            msg = "Add Your First Expense !",
+                            content = {
+                                AddExpenseButton(
+                                    onButtonClick = {
+                                        splitExpenseViewModel.performExpenseAlteringActions(
+                                            perform = ExpenseState.CREATE
+                                        )
+                                    }
+                                )
+                            }
+                        )
+
+                    } else if (clbItem.collabUserId != splitExpenseViewModel.getAuthUserId() &&
+                        clbItem.getTotalExpense() == 0
+                    ) {
+                        EmptyDataUi(
+                            imageUrl = "https://schedify.pythonanywhere.com/media/pictures/add_expense_normal.png",
+                            msg = stringResource(R.string.no_expense_available),
+                        )
+                    } else {
+                        ExpenseTabsScreen(
+                            groupItem = grpItem,
+                            expenseData =  mapOf(
+                                "${ExpenseNomenclature.SELF.description} ( ${clbItem.expenses?.self?.size ?: 0} )" to (clbItem.expenses?.self
+                                    ?: emptyList()),
+                                "${ExpenseNomenclature.LEND.description} ( ${clbItem.expenses?.lend?.size ?: 0} )" to (clbItem.expenses?.lend
+                                    ?: emptyList()),
+                                "${ExpenseNomenclature.OWE.description} ( ${clbItem.expenses?.owe?.size ?: 0} )" to (clbItem.expenses?.owe
+                                    ?: emptyList())
+                            ),
+                            performUpdateOrDeleteOperationCallback = { perform, expense ->
+                                splitExpenseViewModel.performExpenseAlteringActions(
+                                    perform = perform,
+                                    expense = expense
+                                )
+                            }
+                        )
+                    }
+                }
+            } ?: Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Something went wrong")
+            }
+        }
+
+        updateDeleteData.takeIf { data -> data.perform == ExpenseState.CREATE }?.let {
             groupItem?.let { grpItem ->
                 GenericBottomSheet(
                     sheetState = bottomSheetState,
@@ -293,66 +295,126 @@ fun ExpenseScreen(
                     }
                 )
             } ?: context.showToast("Invalid req.")
+        }
 
-            LaunchedEffect(bottomSheetState.currentValue) {
-                if (bottomSheetState.currentValue == ModalBottomSheetValue.Hidden) {
-                    bottomSheetState.hide()
+        updateDeleteData.takeIf { data -> data.perform == ExpenseState.UPDATE }?.let {
+            groupItem?.let { grpItem ->
+                updateDeleteData.expenseResponseDto?.let { expense ->
+                    (grpItem to expense)
                 }
+            }?.let { (groupItem, expense) ->
+                GenericBottomSheet(
+                    sheetState = editExpenseBottomSheetState,
+                    headingTitleText = stringResource(R.string.update,
+                        stringResource(R.string.expense)),
+                    buttonText = stringResource(R.string.update_text),
+                    formInputDataFields = buildEditExpenseFormFields(
+                        expense = expense,
+                        grpItem = groupItem
+                    ),
+                    formOutputData = { data ->
+                        (data.let { validRequestData ->
+                            groupItem.id?.let { grpId ->
+                                collaboratorItem?.id?.let { collaboratorId ->
+                                    (grpId to collaboratorId)
+                                }
+                            }?.let { (grpId, collaboratorId) ->
+                                prepareExpenseRequest(
+                                    value = validRequestData,
+                                    alteringState = ExpenseAlterState.UPDATE
+                                ).copy(
+                                    addedByCollaboratorId = collaboratorId,
+                                    groupId = grpId
+                                ).let { request ->
+                                    if(request != ExpenseRequestDto.default()) {
+                                        splitExpenseViewModel.startExpenseChosenProcess(
+                                            expenseState = ExpenseState.UPDATE,
+                                            expenseUpdateDeleteRequestPostData = ExpenseUpdateDeleteRequestPostData(
+                                                expenseCreationId = expense.eCreationId,
+                                                expenseRequestData = request
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        })
+                    },
+                    dismissSheet = {
+                        coroutine.launch {
+                            splitExpenseViewModel.resetUpdateOrDeleteState()
+                            editExpenseBottomSheetState.hide()
+                        }
+                    }
+                )
+            }
+        }
+
+        LaunchedEffect(bottomSheetState.currentValue) {
+            if (bottomSheetState.currentValue == ModalBottomSheetValue.Hidden) {
+                bottomSheetState.hide()
+            }
+        }
+
+        with(splitExpenseViewModel) {
+            val state = updateDeleteInfoState.value
+            when(state.perform) {
+                ExpenseState.CREATE -> {
+                    coroutine.launch {
+                        bottomSheetState.show()
+                    }
+                }
+
+                ExpenseState.UPDATE -> {
+                    coroutine.launch {
+                        editExpenseBottomSheetState.show()
+                    }
+                }
+
+                ExpenseState.DELETE -> {
+                    CustomDialog(
+                        title = "Delete Expense",
+                        desc = stringResource(
+                            R.string.are_you_sure_you_ant_to_delete_this,
+                            "expense"
+                        ),
+                        confirmButtonText = stringResource(R.string.delete),
+                        dismissButtonText = stringResource(R.string.cancel),
+                        onConfirm = {
+                            state.expenseResponseDto?.eCreationId?.let { eCreationId ->
+                                splitExpenseViewModel.startExpenseChosenProcess(
+                                    expenseState = ExpenseState.DELETE,
+                                    expenseUpdateDeleteRequestPostData = ExpenseUpdateDeleteRequestPostData(
+                                        expenseCreationId = eCreationId
+                                    )
+                                )
+                            }
+                            splitExpenseViewModel.resetUpdateOrDeleteState()
+                        },
+                        onDismiss = {
+                            splitExpenseViewModel.resetUpdateOrDeleteState()
+                        }
+                    )
+                }
+
+                else -> {}
             }
 
-            with(splitExpenseViewModel) {
-                val state = updateDeleteInfoState.value
-                when(state.perform) {
-                    ExpenseState.UPDATE -> {
+            // listen to state changes for collaborator apis call
+            (expenseState.value is Resource.Loading).takeIf { condition -> condition }?.let {
+                LoadingUi()
+            }
 
-                    }
+            (expenseState.value is Resource.Error).takeIf { condition -> condition }?.let {
+                val errorMsg = expenseState.value.message
+                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                splitExpenseViewModel.resetExpenseState()
+            }
 
-                    ExpenseState.DELETE -> {
-                        /*CustomDialog(
-                            title = "Delete Expense",
-                            desc = stringResource(
-                                R.string.are_you_sure_you_ant_to_delete_this,
-                                "expense"
-                            ),
-                            confirmButtonText = stringResource(R.string.delete),
-                            dismissButtonText = stringResource(R.string.cancel),
-                            onConfirm = {
-                                state.expenseResponseDto?.id?.let { expenseId ->
-                                    splitExpenseViewModel.startExpenseChosenProcess(
-                                        expenseState = ExpenseState.DELETE,
-                                        expenseUpdateDeleteRequestPostData = ExpenseUpdateDeleteRequestPostData(
-                                            id = expenseId
-                                        )
-                                    )
-                                }
-                                splitExpenseViewModel.resetUpdateOrDeleteState()
-                            },
-                            onDismiss = {
-                                splitExpenseViewModel.resetUpdateOrDeleteState()
-                            }
-                        )*/
-                    }
-
-                    else -> {}
-                }
-
-                // listen to state changes for collaborator apis call
-                (expenseState.value is Resource.Loading).takeIf { condition -> condition }?.let {
-                    LoadingUi()
-                }
-
-                (expenseState.value is Resource.Error).takeIf { condition -> condition }?.let {
-                    val errorMsg = expenseState.value.message
-                    Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+            if(expenseState.value is Resource.Success &&
+                getAllGroupDetails.value is Resource.Success) {
+                expenseState.value.data?.let { successMsg ->
+                    Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
                     splitExpenseViewModel.resetExpenseState()
-                }
-
-                if(expenseState.value is Resource.Success &&
-                    getAllGroupDetails.value is Resource.Success) {
-                    expenseState.value.data?.let { successMsg ->
-                        Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
-                        splitExpenseViewModel.resetExpenseState()
-                    }
                 }
             }
         }
@@ -442,21 +504,37 @@ fun ExpenseTabsScreen(
     groupItem: GroupExpenseResponseDto,
     expenseData: Map<String,
             List<GroupExpenseResponseDto.Collaborator.AllExpenses.Expense>>,
-    onDeleteOptionClicked: (item: GroupExpenseResponseDto.Collaborator.AllExpenses.Expense) -> Unit
-) {
+    performUpdateOrDeleteOperationCallback: (perform: Any, expense: GroupExpenseResponseDto.Collaborator.AllExpenses.Expense) -> Unit,
+    ) {
     val tabTitles = expenseData.keys.toList()
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
-    TabRow(selectedTabIndex = selectedTabIndex) {
+
+    TabRow(
+        modifier = Modifier.padding(horizontal = dp16),
+        containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        selectedTabIndex = selectedTabIndex,
+        indicator = { tabPositions ->
+            TabRowDefaults.SecondaryIndicator(
+                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                color = getColorForExpenseNomenclature(
+                    tabTitles[selectedTabIndex]
+                )
+            )
+        },
+        contentColor = MaterialTheme.colorScheme.primary
+    ) {
         tabTitles.forEachIndexed { index, title ->
             Tab(
                 selected = selectedTabIndex == index,
                 onClick = { selectedTabIndex = index },
+                selectedContentColor = getColorForExpenseNomenclature(title),
+                unselectedContentColor = MaterialTheme.colorScheme.inversePrimary,
                 text = {
                     Text(
                         title.replaceFirstChar { it.uppercaseChar() },
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
             )
@@ -468,35 +546,38 @@ fun ExpenseTabsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
+            .padding(dp16)
     ) {
-
-        Spacer(modifier = Modifier.height(dp16))
 
         Text(
             text = buildAnnotatedString {
                 withStyle(
-                    style = MaterialTheme.typography.titleLarge.toSpanStyle().copy(
+                    style = MaterialTheme.typography.bodyMedium.toSpanStyle().copy(
                         color = MaterialTheme.colorScheme.inversePrimary
                     )
                 ) {
-                    append(stringResource(R.string.total_expense, tabTitles[selectedTabIndex]))
+                    append(stringResource(R.string.total_amount_as_per_this_section, tabTitles[selectedTabIndex]))
                 }
                 withStyle(
                     style = MaterialTheme.typography.labelLarge.toSpanStyle().copy(
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 ) {
-                    append("₹ ${currentList.sumOf { it.eAmt }}")
+                    append("₹${currentList.sumOf { it.eAmt }}")
                 }
             })
 
+        Spacer(modifier = Modifier.height(dp16))
+
         if(currentList.isEmpty()) {
             EmptyDataUi(
-                image = R.drawable.add_expense_normal,
+                imageUrl = "https://schedify.pythonanywhere.com/media/pictures/add_expense_normal.png",
                 msg = stringResource(R.string.no_data_available),
             )
         } else {
             LazyColumn(
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = dp16),
                 verticalArrangement = Arrangement.spacedBy(dp16)
             ) {
@@ -505,7 +586,7 @@ fun ExpenseTabsScreen(
                         tabType = tabTitles[selectedTabIndex],
                         item = item,
                         groupItem = groupItem,
-                        onDeleteOptionClicked = onDeleteOptionClicked
+                        performUpdateOrDeleteOperationCallback = performUpdateOrDeleteOperationCallback,
                     )
                 }
             }
@@ -518,7 +599,7 @@ fun ExpenseCard(
     tabType: String,
     item: GroupExpenseResponseDto.Collaborator.AllExpenses.Expense,
     groupItem: GroupExpenseResponseDto,
-    onDeleteOptionClicked: (item: GroupExpenseResponseDto.Collaborator.AllExpenses.Expense ) -> Unit
+    performUpdateOrDeleteOperationCallback: (perform: Any, expense: GroupExpenseResponseDto.Collaborator.AllExpenses.Expense) -> Unit,
 ) {
 
     val isAlterOptionMenuVisible = remember { mutableStateOf(false) }
@@ -557,13 +638,13 @@ fun ExpenseCard(
                 ) {
                     CustomChip(
                         text = item.eExpenseType,
-                        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        bgColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                        borderColor = MaterialTheme.colorScheme.onTertiary,
+                        textColor = getColorForExpenseType(ExpenseType.fromDescription(item.eExpenseType)),
+                        bgColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        borderColor = getColorForExpenseType(ExpenseType.fromDescription(item.eExpenseType)),
                         isOutlined = true
                     )
 
-                    if (tabType.contains(ExpenseNomenclature.SELF.description, ignoreCase = true).not()   )
+                    if (tabType.contains(ExpenseNomenclature.SELF.description, ignoreCase = true).not())
                         CustomChip(
                             text = stringResource(
                                 R.string.to_be_settled_by_with_separator,
@@ -599,6 +680,38 @@ fun ExpenseCard(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Icon(
+                                                Icons.Default.Edit,
+                                                contentDescription = "",
+                                                tint = MaterialTheme.colorScheme.onBackground
+                                            )
+                                            Spacer(modifier = Modifier.width(
+                                                dp4))
+                                            Text(
+                                                stringResource(
+                                                    R.string.edit
+                                                ),
+                                                style = MaterialTheme.typography.bodyMedium.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onBackground
+                                                )
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        isAlterOptionMenuVisible.value = false
+                                        performUpdateOrDeleteOperationCallback(
+                                            ExpenseState.UPDATE,
+                                            item
+                                        )
+                                    }
+                                )
+
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
                                                 Icons.Default.Delete,
                                                 contentDescription = "",
                                                 tint = MaterialTheme.colorScheme.secondary
@@ -618,7 +731,10 @@ fun ExpenseCard(
                                     },
                                     onClick = {
                                         isAlterOptionMenuVisible.value = false
-                                        onDeleteOptionClicked.invoke(item)
+                                        performUpdateOrDeleteOperationCallback(
+                                            ExpenseState.DELETE,
+                                            item
+                                        )
                                     }
                                 )
                             }
@@ -632,17 +748,18 @@ fun ExpenseCard(
                     modifier = Modifier
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         item.eName,
-                        style = MaterialTheme.typography.headlineSmall.copy(
+                        style = MaterialTheme.typography.titleLarge.copy(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     )
 
                     StaticChips(
                         text = "₹ ${item.eAmt}",
-                        textStyle = MaterialTheme.typography.labelLarge.copy(
+                        textStyle = MaterialTheme.typography.labelMedium.copy(
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         ),
                         color = MaterialTheme.colorScheme.secondary
@@ -654,77 +771,84 @@ fun ExpenseCard(
                     verticalArrangement = Arrangement.SpaceEvenly,
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(
-                        item.eDescription.ifEmpty { "Description : N/A" },
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.inversePrimary
-                        )
-                    )
 
-                    Spacer(modifier = Modifier.height(dp8))
-
-                    Text(
-                        "Expense was of : ₹ ${item.eRawAmt}",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                }
-
-                DashedDivider(
-                    dividerModifier = Modifier.fillMaxWidth(),
-                    dividerColor = MaterialTheme.colorScheme.inversePrimary,
-                    vhSpace = dp16
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement
-                        .SpaceBetween,
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(dp8),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                "Qty: ${item.eQty} ${item.eQtyUnit}",
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            )
-                        }
-                    }
-                    Column(
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.weight(1f)
-                    ) {
-
+                    if(item.eDescription.isNotEmpty()) {
                         Text(
-                            text = buildAnnotatedString {
-                                append("Expense added by | ")
-                                withStyle(
-                                    style = MaterialTheme.typography.titleMedium.toSpanStyle().copy(
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                ) {
-                                    append("${groupItem.getCollaboratorName(item.addedByCollaboratorId)}")
-                                }
-                            })
-
-                        Text(
-                            formattedServerDateTime(item.createdOn),
+                            item.eDescription,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.inversePrimary
                             )
                         )
+
+                        Spacer(modifier = Modifier.height(dp8))
                     }
+
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(
+                                style = MaterialTheme.typography.labelMedium.toSpanStyle().copy(
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                        alpha = 0.6f
+                                    )
+                                )
+                            ) {
+                                append("Qty | ")
+                            }
+                            withStyle(
+                                style = MaterialTheme.typography.labelMedium.toSpanStyle().copy(
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            ) {
+                                append("${item.eQty} ${item.eQtyUnit}")
+                            }
+                        })
+
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(
+                                style = MaterialTheme.typography.labelMedium.toSpanStyle().copy(
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                        alpha = 0.6f
+                                    )
+                                )
+                            ) {
+                                append("Expensed | ")
+                            }
+                            withStyle(
+                                style = MaterialTheme.typography.labelMedium.toSpanStyle().copy(
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            ) {
+                                append("₹${item.eRawAmt}")
+                            }
+                        })
                 }
+
+                DashedDivider(
+                    modifier = Modifier.fillMaxWidth(),
+                    dividerColor = MaterialTheme.colorScheme.inversePrimary,
+                    vSpace = dp8
+                )
+
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(
+                            style = MaterialTheme.typography.labelMedium.toSpanStyle().copy(
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                    alpha = 0.6f
+                                )
+                            )
+                        ) {
+                            append("Added by | ")
+                        }
+                        withStyle(
+                            style = MaterialTheme.typography.bodySmall.toSpanStyle().copy(
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) {
+                            append("${groupItem.getCollaboratorName(item.addedByCollaboratorId)} , ${formattedServerDateTime(item.createdOn)}")
+                        }
+                    })
 
             }
 
@@ -757,18 +881,22 @@ fun ExpenseTopBarActions(
 fun AddExpenseButton(
     onButtonClick: () -> Unit
 ) {
-    ActionIcons(
-        modifier = Modifier
-            .clip(RoundedCornerShape(dp24))
-            .background(color = MaterialTheme.colorScheme.primary)
-            .border(
-                BorderStroke(dp1, MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(dp24)
-            ),
-
-        iconText = stringResource(R.string.add_expense),
-        textColor = MaterialTheme.colorScheme.onSecondaryContainer
+    Box(
+        modifier = Modifier.padding(horizontal = dp16)
     ) {
-        onButtonClick.invoke()
+        ActionIcons(
+            modifier = Modifier
+                .clip(RoundedCornerShape(dp24))
+                .background(color = MaterialTheme.colorScheme.primary)
+                .border(
+                    BorderStroke(dp1, MaterialTheme.colorScheme.primary),
+                    shape = RoundedCornerShape(dp24)
+                ),
+
+            iconText = stringResource(R.string.add_expense),
+            textColor = MaterialTheme.colorScheme.onSecondaryContainer
+        ) {
+            onButtonClick.invoke()
+        }
     }
 }
