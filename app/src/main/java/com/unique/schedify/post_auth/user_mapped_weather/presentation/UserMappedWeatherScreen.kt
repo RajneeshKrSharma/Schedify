@@ -90,9 +90,9 @@ fun UserMappedWeatherScreen(
                         }
                     }
                     DashedDivider(
-                        dividerModifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
                         dividerColor = MaterialTheme.colorScheme.inversePrimary,
-                        vhSpace = dp8
+                        vSpace = dp8
                     )
                 }
             }
