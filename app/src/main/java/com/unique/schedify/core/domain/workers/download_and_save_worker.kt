@@ -23,17 +23,13 @@ class DownloadAndSaveWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val apiToCall = inputData.getString(KEY) ?: return Result.failure()
-
         if (apiToCall.isBlank()) {
             return Result.failure()
         }
 
-        val handlerMap =
-            EntryPoints.get(applicationContext, ApiHandlerEntryPoint::class.java).handlerMap
+        val handlerMap = EntryPoints.get(applicationContext, ApiHandlerEntryPoint::class.java).handlerMap
+        val tag = tags.firstOrNull { it != this::class.java.name }
 
-        val tag = tags.firstOrNull()
-
-        return tag?.let { tagNotNull -> handlerMap[tagNotNull] }?.callApi(apiToCall)
-            ?: Result.failure()
+        return tag.let { tagNotNull -> handlerMap[tagNotNull] }?.callApi(apiToCall) ?: Result.failure()
     }
 }

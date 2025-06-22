@@ -92,12 +92,12 @@ fun HomeScreenAppBar(
         modifier = Modifier
             .padding(dp8),
         actions = {
-            ActionIcons(
-                iconText = "Track W.S",
-                borderStrokeColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                onWorkerTrackIconClicked()
-            }
+//            ActionIcons(
+//                iconText = "Track W.S",
+//                borderStrokeColor = MaterialTheme.colorScheme.onPrimaryContainer
+//            ) {
+//                onWorkerTrackIconClicked()
+//            }
             ActionIcons(
                 iconText = stringResource(R.string.logout),
                 borderStrokeColor = MaterialTheme.colorScheme.secondary

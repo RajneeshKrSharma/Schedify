@@ -60,7 +60,7 @@ object NotificationUtils {
                 context, 0, intent, PendingIntent.FLAG_IMMUTABLE
             )
 
-            val bitmap = receivedImageUrl?.takeIf { it.isEmpty() }?.let { url -> downloadBitmapFromUrl(url) }
+            val bitmap = receivedImageUrl?.takeIf { it.isNotEmpty() }?.let { url -> downloadBitmapFromUrl(url) }
                 ?: BitmapFactory.decodeResource(context.resources, R.drawable.weather)
 
             withContext(Dispatchers.Main) {

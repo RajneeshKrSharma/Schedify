@@ -124,7 +124,6 @@ fun GroupListScreen(
 
             is Resource.Success -> {
                 val listOfGroups = stateGroupDetails.data ?: emptyList()
-
                 if (listOfGroups.isEmpty()) {
                     EmptyDataUi(
                         imageUrl = "https://schedify.pythonanywhere.com/media/pictures/add_group.png",
@@ -315,68 +314,69 @@ fun GroupListScreen(
                             }
                         }
 
-                        with(splitExpenseViewModel) {
-                            val state = updateDeleteInfoState.value
-                            when(state.perform) {
-                                GroupState.CREATE -> {
-                                    coroutine.launch {
-                                        addGroupBottomSheetState.show()
+                    }
+                }
+                with(splitExpenseViewModel) {
+                    val state = updateDeleteInfoState.value
+                    when(state.perform) {
+                        GroupState.CREATE -> {
+                            coroutine.launch {
+                                addGroupBottomSheetState.show()
+                            }
+                        }
+
+                        GroupState.UPDATE -> {
+                            coroutine.launch {
+                                updateGroupBottomSheetState.show()
+                                updateGroupBottomSheetState.show()
+                            }
+                        }
+
+                        GroupState.DELETE -> {
+                            CustomDialog(
+                                title = stringResource(R.string.delete_collaborator),
+                                desc = stringResource(
+                                    R.string.are_you_sure_you_ant_to_delete_this,
+                                    "group"
+                                ),
+                                confirmButtonText = stringResource(R.string.delete),
+                                dismissButtonText = stringResource(R.string.cancel),
+                                onConfirm = {
+                                    state.groupExpenseResponseDto?.id?.let { groupId ->
+                                        splitExpenseViewModel.startGroupChosenProcess(
+                                            groupState = GroupState.DELETE,
+                                            groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
+                                                id = groupId,
+                                            )
+                                        )
                                     }
+                                    splitExpenseViewModel.resetUpdateOrDeleteState()
+                                },
+                                onDismiss = {
+                                    splitExpenseViewModel.resetUpdateOrDeleteState()
                                 }
+                            )
+                        }
 
-                                GroupState.UPDATE -> {
-                                    coroutine.launch {
-                                        updateGroupBottomSheetState.show()
-                                    }
-                                }
+                        else -> {}
+                    }
 
-                                GroupState.DELETE -> {
-                                    CustomDialog(
-                                        title = stringResource(R.string.delete_collaborator),
-                                        desc = stringResource(
-                                            R.string.are_you_sure_you_ant_to_delete_this,
-                                            "group"
-                                        ),
-                                        confirmButtonText = stringResource(R.string.delete),
-                                        dismissButtonText = stringResource(R.string.cancel),
-                                        onConfirm = {
-                                            state.groupExpenseResponseDto?.id?.let { groupId ->
-                                                splitExpenseViewModel.startGroupChosenProcess(
-                                                    groupState = GroupState.DELETE,
-                                                    groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
-                                                        id = groupId,
-                                                    )
-                                                )
-                                            }
-                                            splitExpenseViewModel.resetUpdateOrDeleteState()
-                                        },
-                                        onDismiss = {
-                                            splitExpenseViewModel.resetUpdateOrDeleteState()
-                                        }
-                                    )
-                                }
+                    // listen to state changes for groups apis call
+                    (groupState.value is Resource.Loading).takeIf { condition -> condition }?.let {
+                        LoadingUi()
+                    }
 
-                                else -> {}
-                            }
+                    (groupState.value is Resource.Error).takeIf { condition -> condition }?.let {
+                        val errorMsg = groupState.value.message
+                        Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                        splitExpenseViewModel.resetGroupState()
+                    }
 
-                            // listen to state changes for groups apis call
-                            (groupState.value is Resource.Loading).takeIf { condition -> condition }?.let {
-                                LoadingUi()
-                            }
-
-                            (groupState.value is Resource.Error).takeIf { condition -> condition }?.let {
-                                val errorMsg = groupState.value.message
-                                Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
-                                splitExpenseViewModel.resetGroupState()
-                            }
-
-                            if(groupState.value is Resource.Success &&
-                                getAllGroupDetails.value is Resource.Success) {
-                                groupState.value.data?.let { successMsg ->
-                                    Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
-                                    splitExpenseViewModel.resetGroupState()
-                                }
-                            }
+                    if(groupState.value is Resource.Success &&
+                        getAllGroupDetails.value is Resource.Success) {
+                        groupState.value.data?.let { successMsg ->
+                            Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
+                            splitExpenseViewModel.resetGroupState()
                         }
                     }
                 }
