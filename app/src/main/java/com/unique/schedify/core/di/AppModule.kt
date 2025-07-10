@@ -12,6 +12,7 @@ import com.unique.schedify.core.local_db.SchedifyDatabase
 import com.unique.schedify.core.network.Api
 import com.unique.schedify.post_auth.post_auth_loading.data.remote.PostAuthApis
 import com.unique.schedify.post_auth.post_auth_loading.local.UserMappedWeatherStatusDao
+import com.unique.schedify.post_auth.schedule_list.remote.ScheduleListApis
 import com.unique.schedify.pre_auth.pre_auth_loading.data.local.PreAuthDao
 import com.unique.schedify.pre_auth.pre_auth_loading.data.remote.PreAuthApis
 import dagger.Module
@@ -129,5 +130,11 @@ object AppModule {
     @Provides
     fun provideUserMappedWeatherStatusDto(database: SchedifyDatabase): UserMappedWeatherStatusDao {
         return database.userMappedWeatherStatusDao
+    }
+
+    @Provides
+    @Singleton
+    fun provideScheduleListApis( retrofit: Retrofit ): ScheduleListApis {
+        return retrofit.create(ScheduleListApis::class.java)
     }
 }
