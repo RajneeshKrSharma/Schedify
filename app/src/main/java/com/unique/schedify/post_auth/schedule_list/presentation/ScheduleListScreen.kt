@@ -25,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -65,6 +66,8 @@ import com.unique.schedify.core.presentation.utils.size_units.sp14
 import com.unique.schedify.core.presentation.utils.size_units.sp16
 import com.unique.schedify.core.presentation.utils.size_units.sp18
 import com.unique.schedify.core.util.Resource
+import com.unique.schedify.post_auth.schedule_list.AttachmentType
+import com.unique.schedify.post_auth.schedule_list.ScheduleTab
 import com.unique.schedify.post_auth.schedule_list.remote.dto.ScheduleListResponseDto
 import com.unique.schedify.ui.theme.primaryColor
 
@@ -75,12 +78,8 @@ fun ScheduleListScreen(
     viewModel: ScheduleListViewModel,
 ) {
     val scheduleItems = viewModel.scheduleItems.value
-    val tabTitles = listOf("All", "Pinned", "Archived")
+    val tabTitles = ScheduleTab.entries
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-
-    val primaryColor = Color(0xFF1A4A96)
-    val secondaryColor = Color(0xFFF9F9FF)
-
 
     Scaffold(
         topBar = {
@@ -101,23 +100,20 @@ fun ScheduleListScreen(
                         )
                     }
                 },
-
             )
         }
     ) { paddingValues ->
 
-
-
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .background(secondaryColor)
+                .background(MaterialTheme.colorScheme.secondary)
                 .fillMaxSize()
         ) {
             TabRow(
                 selectedTabIndex = selectedTabIndex,
-                containerColor = secondaryColor,
-                contentColor = primaryColor,
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.primary,
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier
@@ -127,7 +123,7 @@ fun ScheduleListScreen(
                     )
                 }
             ) {
-                tabTitles.forEachIndexed { index, title ->
+                tabTitles.forEachIndexed { index, tab ->
                     Tab(
                         selected = selectedTabIndex == index,
                         onClick = { selectedTabIndex = index },
@@ -135,7 +131,7 @@ fun ScheduleListScreen(
                         unselectedContentColor = Color.Gray,
                         text = {
                             Text(
-                                text = title,
+                                text = tab.title,
                                 fontSize = sp14,
                                 fontWeight = FontWeight.Medium
                             )
@@ -143,7 +139,6 @@ fun ScheduleListScreen(
                     )
                 }
             }
-
 
             when(viewModel.scheduleItems.value) {
                 is Resource.Loading -> {
@@ -199,8 +194,6 @@ fun ScheduleListScreen(
                             )
                         }
                     }
-
-
                 }
                 else -> {
                     // Show an error message
@@ -218,14 +211,8 @@ fun ScheduleListScreen(
                     }
                 }
             }
-
-
         }
     }
-}
-
-enum class AttachmentType {
-    PDF, IMAGE, TEXT
 }
 
 @Composable
@@ -305,30 +292,30 @@ fun ItemCard(schedule: ScheduleListResponseDto.Data?) {
                          // for testing use this -> listOf("https//.jpg",".pdf",".txt")
 
                         schedule?.attachments?.forEach { attachmentPath ->
-                            val fileType = when {
-                                attachmentPath!!.contains(".jpg") || attachmentPath.contains(".png") -> AttachmentType.IMAGE
-                                attachmentPath.contains(".pdf") -> AttachmentType.PDF
-                                attachmentPath.contains(".txt") -> AttachmentType.TEXT
-                                else -> "file"
+                            attachmentPath?.let {
+                                val fileType = when {
+                                    attachmentPath.contains(".jpg") || attachmentPath.contains(".png") -> AttachmentType.IMAGE
+                                    attachmentPath.contains(".pdf") -> AttachmentType.PDF
+                                    attachmentPath.contains(".txt") -> AttachmentType.TEXT
+                                    else -> "file"
+                                }
+                                Icon(
+                                    painter = when (fileType) {
+                                        AttachmentType.PDF -> painterResource(id = R.drawable.pdf_icon)
+                                        AttachmentType.IMAGE -> painterResource(id = R.drawable.img_icon)
+                                        AttachmentType.TEXT -> painterResource(id = R.drawable.file_icon)
+                                        else -> painterResource(id = R.drawable.file_icon)
+                                    },
+                                    contentDescription = "$fileType",
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(dp20)
+                                )
+                                Spacer(modifier = Modifier.width(dp4))
                             }
-                            Icon(
-                                painter = when (fileType) {
-                                    AttachmentType.PDF -> painterResource(id = R.drawable.pdf_icon)
-                                    AttachmentType.IMAGE -> painterResource(id = R.drawable.img_icon)
-                                    AttachmentType.TEXT -> painterResource(id = R.drawable.file_icon)
-                                    else -> painterResource(id = R.drawable.file_icon)
-                                },
-                                contentDescription = "$fileType",
-                                tint = Color.Gray,
-                                modifier = Modifier.size(dp20)
-                            )
-                            Spacer(modifier = Modifier.width(dp4))
                         }
-
                     }
                 }
             }
-
 
             if (schedule?.isItemPinned == true) {
                 Icon(
@@ -344,5 +331,4 @@ fun ItemCard(schedule: ScheduleListResponseDto.Data?) {
             }
         }
     }
-
 }

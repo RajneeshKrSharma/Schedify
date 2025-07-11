@@ -7,9 +7,9 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val DarkColorScheme = darkColorScheme(
-    primary = DeepGreen,
+    primary = primaryColor,
     onPrimary = DeepPink,
-    secondary = DeepRed,
+    secondary = secondaryColor,
     onSecondary = ShineGreen,
     tertiary = MediumOrange,
     onTertiary = DisabledBg,
@@ -23,9 +23,9 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = DeepGreen,
+    primary = primaryColor,
     onPrimary = DeepPink,
-    secondary = DeepRed,
+    secondary = secondaryColor,
     onSecondary = ShineGreen,
     tertiary = MediumOrange,
     onTertiary = DisabledBg,

@@ -36,9 +36,5 @@ data class ScheduleListResponseDto(
         val userId: Int?,
         @SerializedName("isWeatherNotifyEnabled")
         val isWeatherNotifyEnabled: Boolean? = false
-    ): Parcelable {
-        override fun toString(): String {
-            return "ScheduleListResponseDto.Data(attachments=$attachments, dateTime=$dateTime, googleAuthUserId=$googleAuthUserId, id=$id, isArchived=$isArchived, isItemPinned=$isItemPinned, lastScheduleOn=$lastScheduleOn, priority=$priority, subTitle=$subTitle, title=$title, userId=$userId , isWeatherNotifyEnabled=$isWeatherNotifyEnabled)"
-        }
-    }
+    ): Parcelable
 }
