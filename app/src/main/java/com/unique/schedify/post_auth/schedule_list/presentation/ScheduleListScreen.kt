@@ -1,5 +1,10 @@
 package com.unique.schedify.post_auth.schedule_list.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,10 +24,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +45,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,6 +55,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
@@ -80,6 +91,7 @@ fun ScheduleListScreen(
     val scheduleItems = viewModel.scheduleItems.value
     val tabTitles = ScheduleTab.entries
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var fabExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -101,7 +113,42 @@ fun ScheduleListScreen(
                     }
                 },
             )
+        },
+        floatingActionButton = {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(dp16)
+            ) {
+                // Add Schedule with Current Location FAB
+                AnimatedVisibility(
+                    visible = fabExpanded,
+                    enter = fadeIn() + slideInVertically { it },
+                    exit = fadeOut() + slideOutVertically { it }
+                ) {
+                    FloatingActionButton(
+                        onClick = {
+                            fabExpanded = false
+                        },
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(Icons.Filled.LocationOn, "Current Location", tint = Color.White)
+                    }
+                }
+
+                // Main FAB
+                FloatingActionButton(
+                    onClick = { fabExpanded = !fabExpanded },
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(
+                        if (fabExpanded) Icons.Default.Close else Icons.Default.Add,
+                        "Add Schedule",
+                        tint = Color.White
+                    )
+                }
+            }
         }
+
     ) { paddingValues ->
 
         Column(
