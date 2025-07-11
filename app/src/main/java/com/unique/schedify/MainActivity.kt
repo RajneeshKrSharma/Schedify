@@ -21,6 +21,8 @@ import com.unique.schedify.core.presentation.utils.LOGIN_GRAPH_NAME
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
 import com.unique.schedify.post_auth.post_auth_loading.PostAuthConsentUiScreen
 import com.unique.schedify.post_auth.post_auth_loading.PostAuthDownloadAndSaveUiScreen
+import com.unique.schedify.post_auth.schedule_list.presentation.ScheduleListScreen
+import com.unique.schedify.post_auth.schedule_list.presentation.ScheduleListViewModel
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
 import com.unique.schedify.post_auth.split_expense.presentation.ExpenseScreen
 import com.unique.schedify.post_auth.split_expense.presentation.GroupListScreen
@@ -123,10 +125,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    composable(route = Screen.SimpleScheduleList.route) {
-
-                    }
-
                     composable(route = Screen.PreAuthConsentScreen.route) {
                         PreAuthConsentUiScreen(navController = navController)
                     }
@@ -141,6 +139,17 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(route = Screen.UserMappedWeatherScreen.route) {
                         UserMappedWeatherScreen(navController = navController)
+                    }
+
+
+
+                    // Schedule List Section
+                    composable(route = Screen.ScheduleListItem.route) {
+                        val scheduleListViewModel : ScheduleListViewModel = hiltViewModel()
+                        ScheduleListScreen(
+                            navController,
+                            scheduleListViewModel
+                        )
                     }
                 }
             }

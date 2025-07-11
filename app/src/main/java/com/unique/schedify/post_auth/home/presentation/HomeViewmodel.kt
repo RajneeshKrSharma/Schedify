@@ -60,10 +60,15 @@ class HomeViewmodel @Inject constructor(
             preAuthDao.getHomeCellDetail().let { homeListCellDetails ->
                 homeListCellDetails.map { detail ->
                     with(detail) {
+                        val screen = when (title) {
+                            "Schedule List" -> AvailableScreens.PostAuth.ScheduleListScreen
+                            "Split Expenses" -> AvailableScreens.PostAuth.SplitScheduleListScreen
+                            else -> AvailableScreens.PostAuth.SplitScheduleListScreen
+                        }
                         CellUiDetails(
                             text = title ?: "NA",
                             description = description,
-                            screen = AvailableScreens.PostAuth.SplitScheduleListScreen,
+                            screen = screen,
                             imageUrl = imageUrl,
                             backgroundCardGradientColors = (detail.colorLight to detail.colorDark).toGradientColors(),
                             titleColor = titleColor.toArgbColorInt()?.let { Color(it) }
