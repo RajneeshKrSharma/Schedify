@@ -3,9 +3,7 @@ package com.unique.schedify.auth.login.presentation
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -36,7 +34,6 @@ import com.unique.schedify.core.presentation.base_composables.ResourceProvider
 import com.unique.schedify.core.util.ApiResponseResource
 import com.unique.schedify.core.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -72,7 +69,6 @@ class LoginViewmodel @Inject constructor(
     val resentOtpBtnState: State<Boolean> = _resentOtpBtnState
 
     val email = mutableStateOf("")
-    var otpField = mutableStateOf("")
 
     fun getOtp() {
         viewModelScope.launch {
@@ -95,8 +91,9 @@ class LoginViewmodel @Inject constructor(
         }
     }
 
-    fun resetOtpState() {
+    fun resetToInitialState() {
         _getOtpState.value = Resource.Default()
+        email.value = ""
     }
 
     fun loginViaOtp(loginRequest: LoginViaOtpRequestDto) {
@@ -105,7 +102,9 @@ class LoginViewmodel @Inject constructor(
             sharedPrefConfig.getFcmToken()?.let { fcmToken ->
                 with(loginViaOtpUseCase.execute(loginRequest.copy(fcmToken = fcmToken))) {
                     when (this) {
-                        is ApiResponseResource.Error -> _loginViaOtpState.value = Resource.Error(this.errorMessage)
+                        is ApiResponseResource.Error -> {
+                            _loginViaOtpState.value = Resource.Error(this.errorMessage)
+                        }
                         is ApiResponseResource.Success -> {
                             sharedPrefConfig.saveAuthToken(data.data?.authData?.key ?: "")
                             sharedPrefConfig.saveAuthUserId(data.data?.authData?.user ?: -1)

@@ -21,7 +21,7 @@
     <string name="email_id">Email Id</string>
     <string name="invalid_email_format">Invalid email format</string>
     <string name="ok">OK</string>
-    <string name="please_wait">Please wait..</string>
+    <string name="please_wait">Please wait</string>
     <string name="cancel">Cancel</string>
     <string name="logout">Logout</string>
     <string name="groups">Groups</string>
@@ -74,15 +74,15 @@
     <string name="let_s_get_you">"Let's get you in Schedify"</string>
     <string name="guest">Hi Guest, </string>
     <string name="let_s_list_something">"Let's List something, "</string>
-    <string name="syncing_in_progress">Syncing in progress . .</string>
+    <string name="syncing_in_progress">Syncing in progress</string>
     <string name="slash_separator">" / "</string>
     <string name="the_faves_picks_for_you">The Faves picks for you . .</string>
     <string name="listofcelldetails_is_null">listOfCellDetails is null</string>
     <string name="permission_request">Permission Request</string>
     <string name="permission_granted_proceed_to_next_step">Permission granted. Proceed to Next step</string>
-    <string name="permission_denied_please_enable_manually_from_settings">Permission denied. Please enable manually from settings.</string>
+    <string name="permission_denied_please_enable_manually_from_settings">Permission denied. Please re-request or enable manually from settings.</string>
     <string name="permission_denied_please_request_again">Permission denied. Please request again.</string>
-    <string name="require_notification_permission_to_notify_on_scheduled_item_s_weather_status">Require notification permission to notify on scheduled item\'s weather status.</string>
+    <string name="require_notification_permission_to_notify">Require notification permission to notify you of relevant updates.</string>
     <string name="granted">Granted</string>
     <string name="request">Request</string>
     <string name="data_preparation">Data Preparation</string>
@@ -101,4 +101,5 @@
     <string name="expense">Expense</string>
     <string name="update_text">Update</string>
     <string name="collaborators_in">Collaborators in %1$s , </string>
+    <string name="these_permission_will_be_required">These permission will be required !</string>
 </resources>

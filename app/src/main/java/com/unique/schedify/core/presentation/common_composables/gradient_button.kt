@@ -1,5 +1,6 @@
 package com.unique.schedify.core.presentation.common_composables
 
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,6 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,8 +32,10 @@ import androidx.compose.ui.text.TextStyle
 import com.google.firebase.annotations.concurrent.Background
 import com.unique.schedify.core.presentation.utils.size_units.dp1
 import com.unique.schedify.core.presentation.utils.size_units.dp12
+import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp24
 import com.unique.schedify.core.presentation.utils.size_units.dp8
+import com.unique.schedify.core.presentation.utils.ui_utils.AppBaseGradients
 
 @Composable
 fun GradientButton(
@@ -44,19 +51,12 @@ fun GradientButton(
     onClick: () -> Unit
 ) {
 
-    val gradient = Brush.horizontalGradient(
-        colors = listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.onSecondary
-        )
-    )
-
     Box(
         modifier = modifier
             .background(
                 shape = RoundedCornerShape(dp12),
                 brush = if (enabled) btnGradient
-                    ?: gradient else SolidColor(MaterialTheme.colorScheme.onTertiary)
+                    ?: AppBaseGradients.baseBtnGradient() else SolidColor(MaterialTheme.colorScheme.onTertiary)
             )
             .clip(RoundedCornerShape(dp12))
             .clickable(enabled = enabled) { onClick() },
@@ -64,7 +64,7 @@ fun GradientButton(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(vertical = dp24)
+            modifier = Modifier.padding(vertical = dp16)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -94,7 +94,7 @@ fun OutlinedGradientButton(
     modifier: Modifier = Modifier,
     text: String,
     textStyle: TextStyle = MaterialTheme.typography.labelMedium.copy(
-        color = MaterialTheme.colorScheme.primary
+        color = MaterialTheme.colorScheme.surfaceBright
     ),
     background: Color = MaterialTheme.colorScheme.onSecondaryContainer,
     borderGradient: Brush? = null,
@@ -105,7 +105,7 @@ fun OutlinedGradientButton(
 ) {
     val gradient = Brush.horizontalGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.surfaceBright,
             MaterialTheme.colorScheme.onSecondary
         )
     )
@@ -128,7 +128,7 @@ fun OutlinedGradientButton(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(vertical = dp24)
+            modifier = Modifier.padding(vertical = dp16)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -152,3 +152,30 @@ fun OutlinedGradientButton(
     }
 }
 
+
+@Composable
+fun GradientCircularButton(
+    modifier: Modifier = Modifier,
+    btnGradient: Brush? = null,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+
+    Box(
+        modifier = modifier
+            .background(
+                shape = RoundedCornerShape(dp12),
+                brush = if (enabled) btnGradient
+                    ?: AppBaseGradients.baseBtnGradient() else SolidColor(MaterialTheme.colorScheme.onTertiary)
+            )
+            .clip(RoundedCornerShape(dp12))
+            .clickable(enabled = enabled) { onClick() },
+    ) {
+        Icon(
+            modifier = Modifier.padding(dp12),
+            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+            contentDescription = "Next",
+            tint = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+    }
+}

@@ -174,27 +174,24 @@ fun LoadCollaboratorScreen(
                 buttonText = stringResource(R.string.add),
                 formInputDataFields = buildAddCollaboratorFormFields(),
                 formOutputData = { data ->
-                    data.let { validRequestData ->
-                        prepareCollaboratorRequest(
-                            value = validRequestData,
-                            grpItem = grpItem,
-                            alteringState = CollaboratorAlterState.CREATE
-                        ).let {
-                                request ->
-                            if(request != CollaboratorRequestDto.empty()) {
-                                splitExpenseViewModel.startCollaboratorChosenProcess(
-                                    collaboratorState = CollaboratorState.CREATE,
-                                    collaboratorRequestDto = request
-                                )
-                            }
-                        }
-                    }
+                    executeCollaboratorCreationDataAfterFormSubmission(
+                        data = data,
+                        grpItem = grpItem,
+                        splitExpenseViewModel = splitExpenseViewModel
+                    )
                 },
                 dismissSheet = {
                     coroutine.launch {
                         splitExpenseViewModel.resetUpdateOrDeleteState()
                         addCollaboratorBottomSheetState.hide()
                     }
+                },
+                onFormFieldDone = { data ->
+                    executeCollaboratorCreationDataAfterFormSubmission(
+                        data = data,
+                        grpItem = grpItem,
+                        splitExpenseViewModel = splitExpenseViewModel
+                    )
                 }
             )
         }
@@ -210,27 +207,26 @@ fun LoadCollaboratorScreen(
                         collaborator = updateDeleteNotNullData
                     ),
                     formOutputData = { data ->
-                        (data.let { validRequestData ->
-                            prepareCollaboratorRequest(
-                                collaborator = updateDeleteNotNullData,
-                                value = validRequestData,
-                                grpItem = grpItem,
-                                alteringState = CollaboratorAlterState.UPDATE
-                            ).let { request ->
-                                if(request != CollaboratorRequestDto.empty()) {
-                                    splitExpenseViewModel.startCollaboratorChosenProcess(
-                                        collaboratorState = CollaboratorState.UPDATE,
-                                        collaboratorRequestDto = request
-                                    )
-                                }
-                            }
-                        })
+                        executeCollaboratorUpdateDataAfterFormSubmission(
+                            data = data,
+                            grpItem = grpItem,
+                            collaboratorItem = updateDeleteNotNullData,
+                            splitExpenseViewModel = splitExpenseViewModel
+                        )
                     },
                     dismissSheet = {
                         coroutine.launch {
                             splitExpenseViewModel.resetUpdateOrDeleteState()
                             editCollaboratorBottomSheetState.hide()
                         }
+                    },
+                    onFormFieldDone = { data ->
+                        executeCollaboratorUpdateDataAfterFormSubmission(
+                            data = data,
+                            grpItem = grpItem,
+                            collaboratorItem = updateDeleteNotNullData,
+                            splitExpenseViewModel = splitExpenseViewModel
+                        )
                     }
                 )
             }
@@ -259,6 +255,51 @@ fun LoadCollaboratorScreen(
             }
         }
     }
+}
+
+fun executeCollaboratorCreationDataAfterFormSubmission(
+    data: Map<String, String>,
+    grpItem: GroupExpenseResponseDto,
+    splitExpenseViewModel: SplitExpenseViewModel,
+) {
+    data.let { validRequestData ->
+        prepareCollaboratorRequest(
+            value = validRequestData,
+            grpItem = grpItem,
+            alteringState = CollaboratorAlterState.CREATE
+        ).let {
+                request ->
+            if(request != CollaboratorRequestDto.empty()) {
+                splitExpenseViewModel.startCollaboratorChosenProcess(
+                    collaboratorState = CollaboratorState.CREATE,
+                    collaboratorRequestDto = request
+                )
+            }
+        }
+    }
+}
+
+fun executeCollaboratorUpdateDataAfterFormSubmission(
+    data: Map<String, String>,
+    grpItem: GroupExpenseResponseDto,
+    collaboratorItem: GroupExpenseResponseDto.Collaborator?,
+    splitExpenseViewModel: SplitExpenseViewModel,
+) {
+    (data.let { validRequestData ->
+        prepareCollaboratorRequest(
+            collaborator = collaboratorItem,
+            value = validRequestData,
+            grpItem = grpItem,
+            alteringState = CollaboratorAlterState.UPDATE
+        ).let { request ->
+            if(request != CollaboratorRequestDto.empty()) {
+                splitExpenseViewModel.startCollaboratorChosenProcess(
+                    collaboratorState = CollaboratorState.UPDATE,
+                    collaboratorRequestDto = request
+                )
+            }
+        }
+    })
 }
 
 @Composable

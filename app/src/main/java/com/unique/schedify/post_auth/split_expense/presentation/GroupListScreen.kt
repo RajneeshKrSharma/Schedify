@@ -60,6 +60,7 @@ import com.unique.schedify.core.util.Resource
 import com.unique.schedify.post_auth.post_auth_utils.GroupAlterState
 import com.unique.schedify.post_auth.post_auth_utils.GroupState
 import com.unique.schedify.post_auth.post_auth_utils.SplitScheduleListMoreOption
+import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupRequestDto
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupUpdateDeleteRequestPostData
 import com.unique.schedify.post_auth.split_expense.presentation.utils.EmptyDataUi
@@ -112,17 +113,15 @@ fun GroupListScreen(
             }
         }
     ) {
-        when (stateGroupDetails) {
-            is Resource.Default -> {}
-            is Resource.Error -> {
+
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (stateGroupDetails is Resource.Error) {
                 Toast.makeText(context, stateGroupDetails.message, Toast.LENGTH_SHORT).show()
             }
 
-            is Resource.Loading -> {
-                LoadingUi()
-            }
-
-            is Resource.Success -> {
+            if (stateGroupDetails is Resource.Success) {
                 val listOfGroups = stateGroupDetails.data ?: emptyList()
                 if (listOfGroups.isEmpty()) {
                     EmptyDataUi(
@@ -152,6 +151,9 @@ fun GroupListScreen(
                         ) {
                             items(listOfGroups.size) { index ->
                                 val isAlterOptionMenuVisible = remember { mutableStateOf(false) }
+                                val isOwner = remember {
+                                    splitExpenseViewModel.getAuthUserId() == listOfGroups[index].createdBy
+                                }
 
                                 Card(
                                     modifier = Modifier
@@ -202,84 +204,86 @@ fun GroupListScreen(
                                                     )
                                                 )
 
-                                                Row {
-                                                    Icon(
-                                                        modifier = Modifier.
-                                                        clickable {
-                                                            isAlterOptionMenuVisible.value = true
-                                                        },
-                                                        imageVector = Icons.Default.MoreVert,
-                                                        contentDescription = "More options"
-                                                    )
-                                                    DropdownMenu(
-                                                        containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                        expanded = isAlterOptionMenuVisible.value,
-                                                        onDismissRequest = {
-                                                            isAlterOptionMenuVisible.value = false
+                                                if(isOwner) {
+                                                    Row {
+                                                        Icon(
+                                                            modifier = Modifier.
+                                                            clickable {
+                                                                isAlterOptionMenuVisible.value = true
+                                                            },
+                                                            imageVector = Icons.Default.MoreVert,
+                                                            contentDescription = "More options"
+                                                        )
+                                                        DropdownMenu(
+                                                            containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                            expanded = isAlterOptionMenuVisible.value,
+                                                            onDismissRequest = {
+                                                                isAlterOptionMenuVisible.value = false
+                                                            }
+                                                        ) {
+                                                            DropdownMenuItem(
+                                                                text = {
+                                                                    Row(
+                                                                        verticalAlignment = Alignment.CenterVertically
+                                                                    ) {
+                                                                        Icon(
+                                                                            Icons.Default.Edit,
+                                                                            contentDescription = "",
+                                                                            tint = MaterialTheme.colorScheme.onBackground
+                                                                        )
+                                                                        Spacer(modifier = Modifier.width(
+                                                                            dp4))
+                                                                        Text(
+                                                                            stringResource(
+                                                                                R.string.edit
+                                                                            ),
+                                                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                                                fontWeight = FontWeight.Bold,
+                                                                                color = MaterialTheme.colorScheme.onBackground
+                                                                            )
+                                                                        )
+                                                                    }
+                                                                },
+                                                                onClick = {
+                                                                    isAlterOptionMenuVisible.value = false
+                                                                    splitExpenseViewModel.performGroupAlteringActions(
+                                                                        GroupState.UPDATE,
+                                                                        groupExpenseResponseDto = listOfGroups[index]
+                                                                    )
+                                                                }
+                                                            )
+                                                            DropdownMenuItem(
+                                                                text = {
+                                                                    Row(
+                                                                        verticalAlignment = Alignment.CenterVertically
+                                                                    ) {
+                                                                        Icon(
+                                                                            Icons.Default.Delete,
+                                                                            contentDescription = "",
+                                                                            tint = MaterialTheme.colorScheme.secondary
+                                                                        )
+                                                                        Spacer(modifier = Modifier.width(
+                                                                            dp4))
+                                                                        Text(
+                                                                            stringResource(
+                                                                                R.string.delete
+                                                                            ),
+                                                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                                                fontWeight = FontWeight.Bold,
+                                                                                color = MaterialTheme.colorScheme.secondary
+                                                                            )
+                                                                        )
+                                                                    }
+                                                                },
+                                                                onClick = {
+                                                                    isAlterOptionMenuVisible.value = false
+                                                                    splitExpenseViewModel.performGroupAlteringActions(
+                                                                        GroupState.DELETE,
+                                                                        groupExpenseResponseDto = listOfGroups[index]
+                                                                    )
+                                                                }
+                                                            )
                                                         }
-                                                    ) {
-                                                        DropdownMenuItem(
-                                                            text = {
-                                                                Row(
-                                                                    verticalAlignment = Alignment.CenterVertically
-                                                                ) {
-                                                                    Icon(
-                                                                        Icons.Default.Edit,
-                                                                        contentDescription = "",
-                                                                        tint = MaterialTheme.colorScheme.onBackground
-                                                                    )
-                                                                    Spacer(modifier = Modifier.width(
-                                                                        dp4))
-                                                                    Text(
-                                                                        stringResource(
-                                                                            R.string.edit
-                                                                        ),
-                                                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                                                            fontWeight = FontWeight.Bold,
-                                                                            color = MaterialTheme.colorScheme.onBackground
-                                                                        )
-                                                                    )
-                                                                }
-                                                            },
-                                                            onClick = {
-                                                                isAlterOptionMenuVisible.value = false
-                                                                splitExpenseViewModel.performGroupAlteringActions(
-                                                                    GroupState.UPDATE,
-                                                                    groupExpenseResponseDto = listOfGroups[index]
-                                                                )
-                                                            }
-                                                        )
-                                                        DropdownMenuItem(
-                                                            text = {
-                                                                Row(
-                                                                    verticalAlignment = Alignment.CenterVertically
-                                                                ) {
-                                                                    Icon(
-                                                                        Icons.Default.Delete,
-                                                                        contentDescription = "",
-                                                                        tint = MaterialTheme.colorScheme.secondary
-                                                                    )
-                                                                    Spacer(modifier = Modifier.width(
-                                                                        dp4))
-                                                                    Text(
-                                                                        stringResource(
-                                                                            R.string.delete
-                                                                        ),
-                                                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                                                            fontWeight = FontWeight.Bold,
-                                                                            color = MaterialTheme.colorScheme.secondary
-                                                                        )
-                                                                    )
-                                                                }
-                                                            },
-                                                            onClick = {
-                                                                isAlterOptionMenuVisible.value = false
-                                                                splitExpenseViewModel.performGroupAlteringActions(
-                                                                    GroupState.DELETE,
-                                                                    groupExpenseResponseDto = listOfGroups[index]
-                                                                )
-                                                            }
-                                                        )
                                                     }
                                                 }
                                             }
@@ -381,77 +385,117 @@ fun GroupListScreen(
                     }
                 }
             }
-        }
 
-        updateDeleteData.takeIf { data -> data.perform == GroupState.CREATE }?.let {
-            GenericBottomSheet(
-                sheetState = addGroupBottomSheetState,
-                headingTitleText = stringResource(R.string.add_group),
-                buttonText = "Add",
-                formInputDataFields = buildAddGroupFormFields(),
-                formOutputData = { data ->
-                    data.let { validRequestData ->
-                        prepareGroupRequest(
-                            value = validRequestData,
-                            alteringState = GroupAlterState.CREATE
-                        ).let { request ->
-                            if(request != GroupRequestDto.empty()) {
-                                splitExpenseViewModel.startGroupChosenProcess(
-                                    groupState = GroupState.CREATE,
-                                    groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
-                                        groupRequestData = request
-                                    )
-                                )
-                            }
-                        }
-                    }
-                },
-                dismissSheet = {
-                    coroutine.launch {
-                        splitExpenseViewModel.resetUpdateOrDeleteState()
-                        addGroupBottomSheetState.hide()
-                    }
-                }
-            )
-        }
-
-        updateDeleteData.takeIf { data -> data.perform == GroupState.UPDATE }?.let {
-            updateDeleteData.groupExpenseResponseDto?.let { updateDeleteNotNullData ->
+            updateDeleteData.takeIf { data -> data.perform == GroupState.CREATE }?.let {
                 GenericBottomSheet(
-                    sheetState = updateGroupBottomSheetState,
-                    headingTitleText = stringResource(R.string.update,
-                        stringResource(R.string.group_simple)),
-                    buttonText = stringResource(R.string.update),
-                    formInputDataFields = buildUpdateGroupFormFields(updateDeleteNotNullData),
+                    sheetState = addGroupBottomSheetState,
+                    headingTitleText = stringResource(R.string.add_group),
+                    buttonText = "Add",
+                    formInputDataFields = buildAddGroupFormFields(),
                     formOutputData = { data ->
-                        data.let { validRequestData ->
-                            prepareGroupRequest(
-                                value = validRequestData,
-                                alteringState = GroupAlterState.UPDATE
-                            ).let { request ->
-                                if(request != GroupRequestDto.empty()) {
-                                    splitExpenseViewModel.startGroupChosenProcess(
-                                        groupState = GroupState.UPDATE,
-                                        groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
-                                            id = updateDeleteNotNullData.id,
-                                            groupRequestData = request
-                                        )
-                                    )
-                                }
-                            }
-                        }
+                        executeGroupCreationDataAfterFormSubmission(
+                            data = data,
+                            splitExpenseViewModel = splitExpenseViewModel
+                        )
                     },
                     dismissSheet = {
                         coroutine.launch {
                             splitExpenseViewModel.resetUpdateOrDeleteState()
-                            updateGroupBottomSheetState.hide()
+                            addGroupBottomSheetState.hide()
                         }
+                    },
+                    onFormFieldDone = { data ->
+                        executeGroupCreationDataAfterFormSubmission(
+                            data = data,
+                            splitExpenseViewModel = splitExpenseViewModel
+                        )
                     }
+                )
+            }
+
+            updateDeleteData.takeIf { data -> data.perform == GroupState.UPDATE }?.let {
+                updateDeleteData.groupExpenseResponseDto?.let { updateDeleteNotNullData ->
+                    GenericBottomSheet(
+                        sheetState = updateGroupBottomSheetState,
+                        headingTitleText = stringResource(R.string.update,
+                            stringResource(R.string.group_simple)),
+                        buttonText = stringResource(R.string.update),
+                        formInputDataFields = buildUpdateGroupFormFields(updateDeleteNotNullData),
+                        formOutputData = { data ->
+                            executeGroupUpdateDataAfterFormSubmission(
+                                data = data,
+                                grpItem = updateDeleteNotNullData,
+                                splitExpenseViewModel = splitExpenseViewModel
+                            )
+                        },
+                        dismissSheet = {
+                            coroutine.launch {
+                                splitExpenseViewModel.resetUpdateOrDeleteState()
+                                updateGroupBottomSheetState.hide()
+                            }
+                        },
+                        onFormFieldDone = { data ->
+                            executeGroupUpdateDataAfterFormSubmission(
+                                data = data,
+                                grpItem = updateDeleteNotNullData,
+                                splitExpenseViewModel = splitExpenseViewModel
+                            )
+                        }
+                    )
+                }
+            }
+        }
+
+        if(stateGroupDetails is Resource.Loading) {
+            LoadingUi()
+        }
+    }
+}
+
+fun executeGroupCreationDataAfterFormSubmission(
+    data: Map<String, String>,
+    splitExpenseViewModel: SplitExpenseViewModel,
+) {
+    data.let { validRequestData ->
+        prepareGroupRequest(
+            value = validRequestData,
+            alteringState = GroupAlterState.CREATE
+        ).let { request ->
+            if(request != GroupRequestDto.empty()) {
+                splitExpenseViewModel.startGroupChosenProcess(
+                    groupState = GroupState.CREATE,
+                    groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
+                        groupRequestData = request
+                    )
                 )
             }
         }
     }
 }
+
+fun executeGroupUpdateDataAfterFormSubmission(
+    data: Map<String, String>,
+    grpItem: GroupExpenseResponseDto,
+    splitExpenseViewModel: SplitExpenseViewModel,
+) {
+    data.let { validRequestData ->
+        prepareGroupRequest(
+            value = validRequestData,
+            alteringState = GroupAlterState.UPDATE
+        ).let { request ->
+            if(request != GroupRequestDto.empty()) {
+                splitExpenseViewModel.startGroupChosenProcess(
+                    groupState = GroupState.UPDATE,
+                    groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
+                        id = grpItem.id,
+                        groupRequestData = request
+                    )
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun GroupTopBarActions(

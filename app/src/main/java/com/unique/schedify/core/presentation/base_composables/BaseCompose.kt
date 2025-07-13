@@ -99,7 +99,7 @@ fun BaseCompose(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                if (isConnected) MaterialTheme.colorScheme.primary else
+                                if (isConnected) MaterialTheme.colorScheme.surfaceBright else
                                     MaterialTheme.colorScheme.secondary
                             )
                             .padding(dp2),

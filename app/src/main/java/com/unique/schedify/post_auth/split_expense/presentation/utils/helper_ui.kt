@@ -1,13 +1,11 @@
 package com.unique.schedify.post_auth.split_expense.presentation.utils
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,7 +30,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import com.unique.schedify.core.presentation.common_composables.FormBuilder
 import com.unique.schedify.core.presentation.common_composables.FormField
 import com.unique.schedify.core.presentation.common_composables.GradientButton
@@ -49,6 +46,7 @@ fun GenericBottomSheet(
     dismissSheet: () -> Unit,
     sheetContent: (@Composable () -> Unit)? = null,
     content: (@Composable () -> Unit)? = null,
+    onFormFieldDone: (resultedData: Map<String, String>) -> Unit,
 ) {
 
     val resolvedSheetContent: @Composable () -> Unit = sheetContent ?: {
@@ -57,7 +55,8 @@ fun GenericBottomSheet(
             buttonText = buttonText,
             formInputDataFields = formInputDataFields,
             formOutputData = formOutputData,
-            dismissSheet = dismissSheet
+            dismissSheet = dismissSheet,
+            onFormFieldDone = onFormFieldDone
         )
     }
 
@@ -79,7 +78,8 @@ private fun SheetContent(
     buttonText: String,
     formInputDataFields: List<FormField>,
     formOutputData: (resultedData: Map<String, String>) -> Unit,
-    dismissSheet: () -> Unit
+    dismissSheet: () -> Unit,
+    onFormFieldDone: (resultedData: Map<String, String>) -> Unit,
 ) {
     val formFields: MutableState<List<FormField>> = remember { mutableStateOf(formInputDataFields) }
     val formResultedData: MutableState<Map<String, String>> = remember { mutableStateOf(mapOf()) }
@@ -113,10 +113,13 @@ private fun SheetContent(
 
         Spacer(modifier = Modifier.height(dp16))
 
-        FormBuilder(fields = formFields.value) { formData ->
+        FormBuilder(fields = formFields.value, onFormChanged = { formData ->
             println("Form Data = $formData")
             formResultedData.value = formData
-        }
+        }, onDone = {
+            onFormFieldDone.invoke(formResultedData.value)
+            dismissSheet.invoke()
+        })
 
         Spacer(modifier = Modifier.height(dp16))
 
