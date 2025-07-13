@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,16 +25,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.util.lerp
 import com.unique.schedify.R
+import com.unique.schedify.core.presentation.utils.size_units.dp100
+import com.unique.schedify.core.presentation.utils.size_units.dp150
 import com.unique.schedify.core.presentation.utils.size_units.dp16
+import com.unique.schedify.core.presentation.utils.size_units.dp20
 import com.unique.schedify.core.presentation.utils.size_units.dp64
 import com.unique.schedify.core.presentation.utils.size_units.dp8
+import com.unique.schedify.core.presentation.utils.size_units.sp16
 import com.unique.schedify.core.presentation.utils.size_units.sp20
 import kotlinx.coroutines.delay
 import kotlin.math.absoluteValue
@@ -131,21 +140,26 @@ fun InfiniteAutoSlidingCarousel(
                             painter = painterResource(R.drawable.schedify),
                             contentDescription = ""
                         )
-                        Text(
+
+                        Box(
                             modifier = Modifier
-                                .wrapContentSize()
-                                .padding(vertical = dp8),
-                            text = items[actualIndex].text,
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                fontSize = sp20,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                shadow = Shadow(
-                                    color = MaterialTheme.colorScheme.inversePrimary,
-                                    offset = Offset(4f, 4f),
-                                    blurRadius = 2f
+                                .fillMaxWidth()
+                                .clip(RectangleShape)
+                                .background(color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    shape = RoundedCornerShape(topStart = dp150, topEnd = dp150)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                modifier = Modifier
+                                    .wrapContentSize()
+                                    .padding(vertical = dp8),
+                                text = items[actualIndex].text,
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontSize = sp16,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 )
                             )
-                        )
+                        }
                     }
                 }
             }

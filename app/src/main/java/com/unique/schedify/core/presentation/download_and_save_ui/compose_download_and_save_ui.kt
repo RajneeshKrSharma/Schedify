@@ -1,14 +1,17 @@
 package com.unique.schedify.core.presentation.download_and_save_ui
 
-import DynamicLottieAnimation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,15 +25,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.unique.schedify.R
 import com.unique.schedify.core.presentation.base_composables.BaseCompose
-import com.unique.schedify.core.presentation.common_composables.GradientProgressBar
+import com.unique.schedify.core.presentation.common_composables.CircularGradientProgressBar
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp16
-import com.unique.schedify.core.presentation.utils.size_units.dp40
-import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp14
 import com.unique.schedify.core.presentation.utils.size_units.sp16
-import com.unique.schedify.core.presentation.utils.size_units.sp20
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
+import kotlinx.coroutines.delay
 
 abstract class DownloadAndSaveUi {
     abstract fun title() : String
@@ -57,6 +58,7 @@ abstract class DownloadAndSaveUi {
 
         LaunchedEffect(dataReceived.value) {
             if (dataReceived.value.size == apisToCall().size) {
+                delay(800)
                 Navigation.navigateAndClearBackStackScreen(
                     navigateTo = proceedToScreen(),
                     navController = navController
@@ -73,34 +75,40 @@ abstract class DownloadAndSaveUi {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(dp16),
-                horizontalAlignment = Alignment.Start,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-
-                DynamicLottieAnimation(
-                    rawResId = R.raw.download_and_sync,
-                    modifier = Modifier.weight(0.4f)
-                )
-                Column(
+                Text(
                     modifier = Modifier
-                        .weight(0.6f)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(start = dp16, top = dp16),
-                        text = title(),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontSize = sp16,
-                            color = MaterialTheme.colorScheme.onBackground,
-                        )
+                        .padding(start = dp16, top = dp16),
+                    text = title(),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontSize = sp16,
+                        color = MaterialTheme.colorScheme.onBackground,
                     )
+                )
+                Spacer(modifier = Modifier.padding(vertical = dp16))
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    Box(modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .fillMaxHeight(0.3f)
+                        .wrapContentHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularGradientProgressBar(
+                            modifier = Modifier.fillMaxSize(),
+                            progress = (dataReceived.value.size.toFloat() / apisToCall().size),
+                        )
+                    }
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(dp40),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.SpaceEvenly,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = stringResource(R.string.syncing_in_progress),
@@ -109,33 +117,25 @@ abstract class DownloadAndSaveUi {
                                 color = MaterialTheme.colorScheme.primary,
                             )
                         )
-                        Spacer(Modifier.height(dp8))
-                        GradientProgressBar(
-                            progress = (dataReceived.value.size.toFloat() / apisToCall().size)
-                        )
-                        Spacer(Modifier.height(dp8))
                         Row(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = "${dataReceived.value.size}",
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontSize = sp16,
+                                style = MaterialTheme.typography.displaySmall.copy(
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                             )
                             Text(
                                 stringResource(R.string.slash_separator),
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontSize = sp20,
+                                style = MaterialTheme.typography.displayMedium.copy(
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 )
                             )
                             Text(
                                 text = "${apisToCall().size}",
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontSize = sp16,
+                                style = MaterialTheme.typography.displaySmall.copy(
                                     color = MaterialTheme.colorScheme.primary,
                                 )
                             )

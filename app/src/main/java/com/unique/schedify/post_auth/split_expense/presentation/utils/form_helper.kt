@@ -82,6 +82,18 @@ fun buildAddExpenseFormFields(
     grpItem: GroupExpenseResponseDto
 ): List<FormField> {
 
+    val expenseTypeList = buildList {
+        add(ExpenseType.SELF.description)
+
+        if ((grpItem.collaborators?.size ?: 0) > 1 &&
+            grpItem.collaborators?.all { it?.isActive == true } == true
+        ) {
+            add(ExpenseType.SHARED_EQUALLY.description)
+            // add(ExpenseType.CUSTOM.description)
+        }
+    }
+
+
     val preFields = listOf(
         FormField(
             id = AddExpenseFields.ITEM_NAME.name,
@@ -92,7 +104,7 @@ fun buildAddExpenseFormFields(
         FormField(
             id = AddExpenseFields.ITEM_QUANTITY.name,
             label = AddExpenseFields.ITEM_QUANTITY.description,
-            type = FormFieldType.TEXT,
+            type = FormFieldType.NUMBER,
             isRequired = true
         ),
         FormField(
@@ -133,6 +145,9 @@ fun buildAddExpenseFormFields(
                     //add(ExpenseType.CUSTOM.description)
                 }
             },
+            value = expenseTypeList.takeIf { data -> data.size == 1 }?.let {
+                expenseTypeList.first()
+            } ?: "",
             isRequired = true
         ),
     )

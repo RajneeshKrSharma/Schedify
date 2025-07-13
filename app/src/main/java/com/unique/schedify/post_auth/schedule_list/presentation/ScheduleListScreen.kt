@@ -153,13 +153,13 @@ fun ScheduleListScreen(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.secondary)
+                .background(MaterialTheme.colorScheme.onSecondaryContainer)
                 .fillMaxSize()
         ) {
             TabRow(
                 selectedTabIndex = selectedTabIndex,
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.primary,
+                containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier

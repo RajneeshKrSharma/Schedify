@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,23 +48,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.unique.schedify.R
-import com.unique.schedify.core.presentation.utils.size_units.dp0
 import com.unique.schedify.core.presentation.utils.size_units.dp10
 import com.unique.schedify.core.presentation.utils.size_units.dp12
 import com.unique.schedify.core.presentation.utils.size_units.dp120
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp4
 import com.unique.schedify.core.presentation.utils.size_units.dp8
-import com.unique.schedify.core.presentation.utils.size_units.sp1
+import com.unique.schedify.core.presentation.utils.size_units.dpPoint5
 import com.unique.schedify.core.presentation.utils.size_units.sp12
 import com.unique.schedify.core.presentation.utils.size_units.sp14
 import com.unique.schedify.core.presentation.utils.size_units.sp20
 import com.unique.schedify.core.presentation.utils.size_units.sp50
-import com.unique.schedify.core.presentation.utils.size_units.sp6
-import com.unique.schedify.core.presentation.utils.size_units.sp8
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import kotlinx.coroutines.delay
 
@@ -209,6 +206,11 @@ fun PageFallAnimatedList(
                     modifier = itemModifier
                         .fillMaxWidth()
                         .padding(vertical = dp8)
+                        .border(
+                            dpPoint5,
+                            color = item.titleColor ?: MaterialTheme.colorScheme.onTertiaryContainer,
+                            shape = RoundedCornerShape(dp16)
+                        )
                         .clip(RoundedCornerShape(dp16))
                         .background(
                             brush = Brush.linearGradient(

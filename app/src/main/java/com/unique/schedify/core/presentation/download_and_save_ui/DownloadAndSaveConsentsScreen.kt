@@ -1,13 +1,13 @@
 package com.unique.schedify.core.presentation.download_and_save_ui
 
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -17,6 +17,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,8 +29,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,7 +48,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,21 +59,19 @@ import com.unique.schedify.R
 import com.unique.schedify.core.presentation.base_composables.BaseCompose
 import com.unique.schedify.core.presentation.common_composables.GradientButton
 import com.unique.schedify.core.presentation.common_composables.ImageWithLoadingIndicator
+import com.unique.schedify.core.presentation.download_and_save_ui.model.ConsentCardModel
+import com.unique.schedify.core.presentation.download_and_save_ui.utility.PermissionState
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp1
 import com.unique.schedify.core.presentation.utils.size_units.dp12
-import com.unique.schedify.core.presentation.utils.size_units.dp150
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp18
 import com.unique.schedify.core.presentation.utils.size_units.dp2
-import com.unique.schedify.core.presentation.utils.size_units.dp200
 import com.unique.schedify.core.presentation.utils.size_units.dp24
-import com.unique.schedify.core.presentation.utils.size_units.dp36
-import com.unique.schedify.core.presentation.utils.size_units.dp50
+import com.unique.schedify.core.presentation.utils.size_units.dp4
 import com.unique.schedify.core.presentation.utils.size_units.dp6
-import com.unique.schedify.core.presentation.utils.size_units.dp8
-import com.unique.schedify.core.presentation.utils.size_units.dp80
 import com.unique.schedify.core.presentation.utils.size_units.sp14
+import com.unique.schedify.core.presentation.utils.ui_utils.AppBaseGradients
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 
 abstract class DownloadAndSaveConsents {
@@ -113,7 +114,7 @@ abstract class DownloadAndSaveConsents {
                     Modifier.weight(0.7f)
                 ) {
                     Text(title(),
-                        style = MaterialTheme.typography.titleLarge.copy(
+                        style = MaterialTheme.typography.titleMedium.copy(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     )
@@ -141,30 +142,19 @@ abstract class DownloadAndSaveConsents {
         navController: NavController
     ) {
         val context = LocalContext.current
-        val activity = context as Activity
         val lifecycleOwner = LocalLifecycleOwner.current
 
-        val isNotificationPermissionEligible by rememberUpdatedState(downloadAndSaveViewModel.isNotificationPermissionEligible.value)
-        val stepNumber by rememberUpdatedState(downloadAndSaveViewModel.stepNumber.value)
-        val permissionGranted by rememberUpdatedState(downloadAndSaveViewModel.notificationPermissionGranted.value)
-        val permissionRequested by rememberUpdatedState(downloadAndSaveViewModel.permissionRequested.value)
-        val shouldShowSettings by rememberUpdatedState(downloadAndSaveViewModel.shouldShowSettings.value)
-        val inSettingsFlow by rememberUpdatedState(downloadAndSaveViewModel.permissionInSettingsFlow.value)
-
         // 🟡 Request permission dialog launcher
-        val permissionLauncher = rememberLauncherForActivityResult(
+        val permissionLauncher: ManagedActivityResultLauncher<String, Boolean> = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
         ) { isGranted ->
-            val shouldShowRationale = activity.let {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    ActivityCompat.shouldShowRequestPermissionRationale(it, POST_NOTIFICATIONS)
-                } else {
-                    // For versions below Android 13, permission is implicitly granted
-                    false
-                }
-            } ?: false
 
-            downloadAndSaveViewModel.onPermissionResult(isGranted, shouldShowRationale)
+            if(isGranted.not()) {
+                openAppNotificationSettings(context)
+
+            } else {
+                downloadAndSaveViewModel.onPermissionResult(isGranted)
+            }
         }
 
         // 🟢 Handle ON_RESUME after settings
@@ -175,23 +165,15 @@ abstract class DownloadAndSaveConsents {
                         downloadAndSaveViewModel.checkIsNotificationPermissionEligible(true)
                         val granted = ContextCompat.checkSelfPermission(context, POST_NOTIFICATIONS) ==
                                 PackageManager.PERMISSION_GRANTED
-                        if(inSettingsFlow) {
-                            val shouldShowRationale = activity.let {
-                                ActivityCompat.shouldShowRequestPermissionRationale(it, POST_NOTIFICATIONS)
-                            } ?: false
-
-                            downloadAndSaveViewModel.onPermissionResult(granted, shouldShowRationale)
-                        } else {
-                            if (granted) {
-                                downloadAndSaveViewModel.onPermissionResult(
-                                    isGranted = true,
-                                    shouldShowRationale = false
-                                )
-                            }
-                        }
+                        downloadAndSaveViewModel.onPermissionResult(isGranted = granted)
+                        downloadAndSaveViewModel.shouldShowNotificationSetting(isShow = granted.not())
 
                     } else {
                         downloadAndSaveViewModel.checkIsNotificationPermissionEligible(false)
+                        Navigation.navigateToScreen(
+                            navigateTo = proceedToScreen(),
+                            navController = navController,
+                        )
                     }
                 }
             }
@@ -206,353 +188,303 @@ abstract class DownloadAndSaveConsents {
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier.weight(0.15f),
+                modifier = Modifier
+                    .weight(0.85f),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if(isNotificationPermissionEligible) {
-                    DottedLine(
-                        color = if (permissionGranted) MaterialTheme.colorScheme.primary.copy(
-                            0.7f
-                        ) else MaterialTheme.colorScheme.inversePrimary.copy(
-                            alpha = 0.7f
-                        ),
-                        dotRadius = dp2,
-                        spaceBetween = dp6,
-                        height = dp80
-                    )
-                    Spacer(Modifier.padding(vertical = dp2))
-                    Box(
-                        modifier = Modifier
-                            .border(
-                                width = dp1,
-                                color = if (permissionGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary.copy(
-                                    0.6f
-                                ),
-                                shape = CircleShape
-                            )
-                            .padding(dp6),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .width(dp24)
-                                .height(dp24)
-                                .background(
-                                    color = if (permissionGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary.copy(
-                                        0.3f
-                                    ),
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "1", // will correct later with dynamic code
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontSize = sp14,
-                                    color = if(permissionGranted) MaterialTheme.colorScheme.onSecondaryContainer
-                                    else MaterialTheme.colorScheme.inversePrimary
-                                )
-                            )
-                        }
-                    }
-                    Spacer(Modifier.padding(vertical = dp2))
-                    DottedLine(
-                        color = if (permissionGranted) MaterialTheme.colorScheme.primary.copy(
-                            0.7f
-                        ) else MaterialTheme.colorScheme.inversePrimary.copy(
-                            0.7f
-                        ),
-                        dotRadius = dp2,
-                        spaceBetween = dp6,
-                        height = dp150
-                    )
-                    Spacer(Modifier.padding(vertical = dp2))
-                    DottedLine(
-                        color = if (permissionGranted) MaterialTheme.colorScheme.primary.copy(
-                            0.7f
-                        ) else MaterialTheme.colorScheme.inversePrimary.copy(
-                            0.7f
-                        ),
-                        dotRadius = dp2,
-                        spaceBetween = dp6,
-                        height = dp50
-                    )
-                    Spacer(Modifier.padding(vertical = dp2))
-                    Box(
-                        modifier = Modifier
-                            .border(
-                                width = dp1,
-                                color = if (permissionGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary.copy(
-                                    0.6f
-                                ),
-                                shape = CircleShape
-                            )
-                            .padding(dp6),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .width(dp24)
-                                .height(dp24)
-                                .background(
-                                    color = if (permissionGranted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inversePrimary.copy(
-                                        0.3f
-                                    ),
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "2", // will correct later with dynamic code
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontSize = sp14,
-                                    color = if(permissionGranted) MaterialTheme.colorScheme.onSecondaryContainer
-                                    else MaterialTheme.colorScheme.inversePrimary
-                                )
-                            )
-                        }
-                    }
-                } else {
-                    DottedLine(
-                        color = if (permissionGranted) MaterialTheme.colorScheme.primary.copy(
-                            0.7f
-                        ) else MaterialTheme.colorScheme.inversePrimary.copy(
-                            0.7f
-                        ),
-                        dotRadius = dp2,
-                        spaceBetween = dp6,
-                        height = dp80
-                    )
-                    Spacer(Modifier.padding(vertical = dp2))
-                    Box(
-                        modifier = Modifier
-                            .border(
-                                width = dp1,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = CircleShape
-                            )
-                            .padding(dp6),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .width(dp24)
-                                .height(dp24)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "1", // will correct later with dynamic code
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontSize = sp14,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            )
-                        }
-                    }
-                }
-            }
 
-            Column(
-                modifier =  Modifier
-                    .weight(0.85f)
-                    .padding(horizontal = dp16),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if(isNotificationPermissionEligible) {
-                    // 🔐 Permission Card
-                    Card(
-                        shape = RoundedCornerShape(dp12),
-                        border = if(permissionGranted) BorderStroke(dp2, MaterialTheme.colorScheme.onSecondary) else {
-                            if (stepNumber == 1) {
-                                BorderStroke(dp2, MaterialTheme.colorScheme.secondary)
-                            } else null
-                        },
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer),
-                        elevation = CardDefaults.cardElevation(defaultElevation = dp6),
+                val getContentCardModelConfigList = getConsentUiCardList(
+                    context = context,
+                    navController = navController,
+                    downloadAndSaveViewModel = downloadAndSaveViewModel,
+                    permissionLauncher = permissionLauncher
+                )
+                getContentCardModelConfigList.filter { it.visibility } .forEachIndexed { index, data ->
+                    val trackLabelCount = index + 1
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(dp200)
+                            .height(IntrinsicSize.Min)
                     ) {
                         Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(dp16),
-                            verticalArrangement = Arrangement.SpaceBetween
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.weight(0.15f)
                         ) {
-                            Column {
-                                Text(
-                                    stringResource(R.string.permission_request),
-                                    style = MaterialTheme.typography.headlineSmall.copy(
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                ))
-                                Spacer(Modifier.height(dp8))
-
-                                val infoText = when {
-                                    permissionGranted -> stringResource(R.string.permission_granted_proceed_to_next_step)
-                                    shouldShowSettings -> stringResource(R.string.permission_denied_please_enable_manually_from_settings)
-                                    permissionRequested -> stringResource(R.string.permission_denied_please_request_again)
-                                    else -> stringResource(R.string.require_notification_permission_to_notify_on_scheduled_item_s_weather_status)
-                                }
-
-                                Text(
-                                    infoText,
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                    )
-                                )
-                            }
-
-                            GradientButton(
-                                text = if (permissionGranted) stringResource(R.string.granted) else stringResource(
-                                    R.string.request
+                            DottedLine(
+                                color = if (data.isPermissionGranted) MaterialTheme.colorScheme.surfaceBright.copy(
+                                    0.7f
+                                ) else MaterialTheme.colorScheme.inversePrimary.copy(
+                                    alpha = 0.3f
                                 ),
-                                btnGradient = if (permissionGranted) null else Brush.horizontalGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.secondary,
-                                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                                dotRadius = dp2,
+                                spaceBetween = dp6,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .border(
+                                        width = dp1,
+                                        color = if (data.isPermissionGranted) MaterialTheme.colorScheme.surfaceBright else MaterialTheme.colorScheme.inversePrimary.copy(
+                                            0.3f
+                                        ),
+                                        shape = CircleShape
                                     )
-                                ),
-                                enabled = !permissionGranted,
-                                textStyle = MaterialTheme.typography.titleMedium.copy(
-                                    color =  MaterialTheme.colorScheme.onSecondaryContainer
-                                )
+                                    .padding(dp6),
+                                contentAlignment = Alignment.Center
                             ) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    val permissionStatus = ContextCompat.checkSelfPermission(
-                                        context,
-                                        POST_NOTIFICATIONS
-                                    )
-
-                                    if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-                                        // Permission already granted - no action needed
-                                        downloadAndSaveViewModel.onPermissionResult(
-                                            isGranted = true,
-                                            shouldShowRationale = false
+                                Box(
+                                    modifier = Modifier
+                                        .width(dp24)
+                                        .height(dp24)
+                                        .background(
+                                            color = if (data.isPermissionGranted) MaterialTheme.colorScheme.surfaceBright else MaterialTheme.colorScheme.inversePrimary.copy(
+                                                0.3f
+                                            ),
+                                            shape = CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = trackLabelCount.toString(),
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontSize = sp14,
+                                            color = if(data.isPermissionGranted) MaterialTheme.colorScheme.onSecondaryContainer
+                                            else MaterialTheme.colorScheme.inversePrimary
                                         )
-                                        return@GradientButton
-                                    }
-
-                                    val showRationale = ActivityCompat.shouldShowRequestPermissionRationale(
-                                        activity,
-                                        POST_NOTIFICATIONS
                                     )
-
-                                    if (showRationale) {
-                                        downloadAndSaveViewModel.resetRequestState()
-                                        permissionLauncher.launch(POST_NOTIFICATIONS)
-                                    } else {
-                                        downloadAndSaveViewModel.markSettingsFlowStarted()
-                                        openAppNotificationSettings(context)
-                                    }
                                 }
                             }
+
+                            if (trackLabelCount == getContentCardModelConfigList.size) {
+                                DottedLine(
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    dotRadius = dp2,
+                                    spaceBetween = dp6,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            } else {
+                                DottedLine(
+                                    color = if (data.isPermissionGranted) MaterialTheme.colorScheme.surfaceBright.copy(
+                                        0.7f
+                                    ) else MaterialTheme.colorScheme.inversePrimary.copy(
+                                        alpha = 0.3f
+                                    ),
+                                    dotRadius = dp2,
+                                    spaceBetween = dp6,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+
+
+                        }
+
+                        Card(
+                            shape = RoundedCornerShape(dp12),
+                            border = if(data.isCardButtonEnabled) BorderStroke(dp2, permissionStateColors(data.permissionState))
+                            else BorderStroke(dp1, MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.3f)),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer),
+                            elevation = CardDefaults.cardElevation(defaultElevation = dp6),
+                            modifier = Modifier.weight(0.85f)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(dp16),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(data.cardTitle, style = MaterialTheme.typography.titleLarge.copy(
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    ))
+                                    Spacer(modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(dp4))
+                                    Text(
+                                        data.cardSubTitle,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = permissionStateColors(data.permissionState)
+                                        )
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(dp16))
+
+                                GradientButton(
+                                    text = data.cardButtonText,
+                                    btnGradient = permissionStateGradients(permissionState = data.permissionState),
+                                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    ),
+                                    enabled = data.isCardButtonEnabled,
+                                    onClick = data.onCardButtonClick
+                                )
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier
-                        .fillMaxWidth()
-                        .height(dp36))
-                    Card(
-                        shape = RoundedCornerShape(dp12),
-                        border = if(permissionGranted) BorderStroke(dp2, MaterialTheme.colorScheme.onSecondary) else {
-                            if (stepNumber == 2) {
-                                BorderStroke(dp2, MaterialTheme.colorScheme.secondary)
-                            } else null
-                        },
-                        colors = if(permissionGranted) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer) else CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onTertiaryContainer),
-                        elevation = CardDefaults.cardElevation(defaultElevation = dp6),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(dp200)
-                    ) {
-                        Column(
+                    if(trackLabelCount == getContentCardModelConfigList.size) {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(dp16),
-                            verticalArrangement = Arrangement.SpaceBetween
+                                .height(IntrinsicSize.Min)
                         ) {
-                            Column {
-                                Text(
-                                    stringResource(R.string.data_preparation), style = MaterialTheme.typography.headlineSmall.copy(
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                ))
-                                Spacer(Modifier.height(dp8))
-                                Text(
-                                    stringResource(R.string.download_and_prepare_data_for_you),
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
-                                    )
-                                )
-                            }
-
-                            GradientButton(
-                                text = stringResource(R.string.yup_continue),
-                                btnGradient = if(permissionGranted) null else Brush.horizontalGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.secondary,
-                                        MaterialTheme.colorScheme.secondary.copy(alpha=0.5f)
-                                    )
-                                ),
-                                enabled = permissionGranted,
-                                textStyle = MaterialTheme.typography.titleMedium.copy(
-                                    color =  MaterialTheme.colorScheme.onSecondaryContainer
-                                )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .weight(0.15f)
                             ) {
-                                Navigation.navigateToScreen(
-                                    navigateTo = proceedToScreen(),
-                                    navController = navController,
+                                DottedLine(
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    dotRadius = dp2,
+                                    spaceBetween = dp6,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+                                Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "",
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                DottedLine(
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    dotRadius = dp2,
+                                    spaceBetween = dp6,
+                                    modifier = Modifier
+                                        .weight(1f)
                                 )
                             }
+                            Spacer(modifier = Modifier.weight(0.85f))
                         }
-                    }
-
-                } else {
-                    Card(
-                        shape = RoundedCornerShape(dp12),
-                        border = BorderStroke(dp2, MaterialTheme.colorScheme.onSecondary),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer),
-                        elevation = CardDefaults.cardElevation(defaultElevation = dp6),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(dp200)
-                    ) {
-                        Column(
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(dp16),
-                            verticalArrangement = Arrangement.SpaceBetween
+                                .height(IntrinsicSize.Min)
                         ) {
-                            Column {
-                                Text(stringResource(R.string.data_preparation), style = MaterialTheme.typography.headlineSmall.copy(
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                ))
-                                Spacer(Modifier.height(dp8))
-                                Text(
-                                    stringResource(R.string.download_prepare_data_for_you),
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .weight(0.15f)
+                            ) {
+                                DottedLine(
+                                    color = if (data.isPermissionGranted) MaterialTheme.colorScheme.primary.copy(
+                                        0.7f
+                                    ) else MaterialTheme.colorScheme.inversePrimary.copy(
+                                        alpha = 0.7f
+                                    ),
+                                    dotRadius = dp2,
+                                    spaceBetween = dp6,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                )
+                                Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "",
+                                    tint = if(data.isPermissionGranted) MaterialTheme.colorScheme.surfaceBright else MaterialTheme.colorScheme.inversePrimary.copy(
+                                        alpha = 0.7f
                                     )
                                 )
-                            }
-
-                            GradientButton(
-                                text = stringResource(R.string.yup_continue),
-                                textStyle = MaterialTheme.typography.titleMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                DottedLine(
+                                    color = if (data.isPermissionGranted) MaterialTheme.colorScheme.surfaceBright.copy(
+                                        0.7f
+                                    ) else MaterialTheme.colorScheme.inversePrimary.copy(
+                                        alpha = 0.7f
+                                    ),
+                                    dotRadius = dp2,
+                                    spaceBetween = dp6,
+                                    modifier = Modifier
+                                        .weight(1f)
                                 )
-                            ) {
-                                Navigation.navigateToScreen(
-                                    navigateTo = proceedToScreen(),
-                                    navController = navController,
-                                )
                             }
+                            Spacer(modifier = Modifier.weight(0.85f))
                         }
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun permissionStateColors(permissionState: PermissionState): Color {
+        return when(permissionState) {
+            PermissionState.notRequested -> MaterialTheme.colorScheme.inversePrimary
+            PermissionState.granted -> MaterialTheme.colorScheme.surfaceBright
+            PermissionState.denied -> MaterialTheme.colorScheme.secondary
+        }
+    }
+
+    @Composable
+    private fun permissionStateGradients(permissionState: PermissionState): Brush {
+        return when(permissionState) {
+            PermissionState.notRequested -> AppBaseGradients.disabledBgGradient()
+            PermissionState.granted -> AppBaseGradients.successBgGradient()
+            PermissionState.denied -> AppBaseGradients.failureBgGradient()
+        }
+    }
+
+    @Composable
+    private fun getConsentUiCardList(
+        context: Context,
+        navController: NavController,
+        downloadAndSaveViewModel: DownloadAndSaveViewModel,
+        permissionLauncher: ManagedActivityResultLauncher<String, Boolean>
+    ): List<ConsentCardModel> {
+        val isNotificationPermissionEligible by rememberUpdatedState(downloadAndSaveViewModel.isNotificationPermissionEligible.value)
+        val permissionGranted by rememberUpdatedState(downloadAndSaveViewModel.notificationPermissionGranted.value)
+        val shouldShowSettings by rememberUpdatedState(downloadAndSaveViewModel.shouldShowSettings.value)
+        val infoText = when {
+            permissionGranted -> stringResource(R.string.permission_granted_proceed_to_next_step)
+            shouldShowSettings -> stringResource(R.string.permission_denied_please_enable_manually_from_settings)
+            else -> stringResource(R.string.require_notification_permission_to_notify)
+        }
+
+        return ArrayList<ConsentCardModel>().apply {
+            add(
+                ConsentCardModel(
+                    visibility = isNotificationPermissionEligible,
+                    cardTitle = stringResource(id = R.string.permission_request),
+                    cardSubTitle = infoText,
+                    cardButtonText = stringResource(id = R.string.request),
+                    isPermissionGranted = permissionGranted,
+                    permissionState = if(permissionGranted) PermissionState.granted else PermissionState.denied,
+                    isCardButtonEnabled = isNotificationPermissionEligible && permissionGranted.not(),
+                    onCardButtonClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            val permissionStatus = ContextCompat.checkSelfPermission(
+                                context,
+                                POST_NOTIFICATIONS
+                            )
+
+                            if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
+                                downloadAndSaveViewModel.onPermissionResult(
+                                    isGranted = true,
+                                )
+                                return@ConsentCardModel
+                            }
+
+                            permissionLauncher.launch(POST_NOTIFICATIONS)
+                        }
+                    }
+                )
+            )
+            add(
+                ConsentCardModel(
+                    cardTitle = stringResource(id = R.string.data_preparation),
+                    cardSubTitle = stringResource(id = R.string.download_and_prepare_data_for_you),
+                    cardButtonText = stringResource(id = R.string.yup_continue),
+                    isCardButtonEnabled = permissionGranted,
+                    isPermissionGranted = permissionGranted,
+                    permissionState = if(permissionGranted) PermissionState.granted else PermissionState.denied,
+                    onCardButtonClick = {
+                        Navigation.navigateToScreen(
+                            navigateTo = proceedToScreen(),
+                            navController = navController,
+                        )
+                    }
+                )
+            )
         }
     }
 
@@ -585,11 +517,10 @@ abstract class DownloadAndSaveConsents {
         color: Color,
         dotRadius: Dp,
         spaceBetween: Dp,
-        height: Dp
+        modifier: Modifier
     ) {
-        Canvas(modifier = Modifier
-            .width(dp1)
-            .height(height)) {
+        Canvas(modifier = modifier
+            .width(dp1)) {
 
             val dotPx = dotRadius.toPx()
             val spacePx = spaceBetween.toPx()

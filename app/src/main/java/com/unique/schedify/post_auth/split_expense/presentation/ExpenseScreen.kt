@@ -264,34 +264,26 @@ fun ExpenseScreen(
                     buttonText = stringResource(R.string.add),
                     formInputDataFields = buildAddExpenseFormFields(grpItem = grpItem),
                     formOutputData = { data ->
-                        data.let { validRequestData ->
-                            grpItem.id?.let { grpId ->
-                                collaboratorItem?.id?.let { collaboratorId ->
-                                    (grpId to collaboratorId)
-                                }
-                            }?.let { (grpId, collaboratorId) ->
-                                prepareExpenseRequest(
-                                    value = validRequestData,
-                                    alteringState = ExpenseAlterState.CREATE
-                                ).copy(
-                                    addedByCollaboratorId = collaboratorId,
-                                    groupId = grpId
-                                ).let { request ->
-                                    splitExpenseViewModel.startExpenseChosenProcess(
-                                        expenseState = ExpenseState.CREATE,
-                                        expenseUpdateDeleteRequestPostData = ExpenseUpdateDeleteRequestPostData(
-                                            expenseRequestData = request
-                                        )
-                                    )
-                                }
-                            }
-                        }
+                        executeExpenseCreationDataAfterFormSubmission(
+                            data = data,
+                            grpItem = grpItem,
+                            collaboratorItem = collaboratorItem,
+                            splitExpenseViewModel = splitExpenseViewModel
+                        )
                     },
                     dismissSheet = {
                         coroutine.launch {
                             splitExpenseViewModel.resetUpdateOrDeleteState()
                             bottomSheetState.hide()
                         }
+                    },
+                    onFormFieldDone = { data ->
+                        executeExpenseCreationDataAfterFormSubmission(
+                            data = data,
+                            grpItem = grpItem,
+                            collaboratorItem = collaboratorItem,
+                            splitExpenseViewModel = splitExpenseViewModel
+                        )
                     }
                 )
             } ?: context.showToast("Invalid req.")
@@ -313,37 +305,28 @@ fun ExpenseScreen(
                         grpItem = groupItem
                     ),
                     formOutputData = { data ->
-                        (data.let { validRequestData ->
-                            groupItem.id?.let { grpId ->
-                                collaboratorItem?.id?.let { collaboratorId ->
-                                    (grpId to collaboratorId)
-                                }
-                            }?.let { (grpId, collaboratorId) ->
-                                prepareExpenseRequest(
-                                    value = validRequestData,
-                                    alteringState = ExpenseAlterState.UPDATE
-                                ).copy(
-                                    addedByCollaboratorId = collaboratorId,
-                                    groupId = grpId
-                                ).let { request ->
-                                    if(request != ExpenseRequestDto.default()) {
-                                        splitExpenseViewModel.startExpenseChosenProcess(
-                                            expenseState = ExpenseState.UPDATE,
-                                            expenseUpdateDeleteRequestPostData = ExpenseUpdateDeleteRequestPostData(
-                                                expenseCreationId = expense.eCreationId,
-                                                expenseRequestData = request
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        })
+                        executeExpenseUpdateDataAfterFormSubmission(
+                            data = data,
+                            groupItem = groupItem,
+                            collaboratorItem = collaboratorItem,
+                            expense = expense,
+                            splitExpenseViewModel = splitExpenseViewModel
+                        )
                     },
                     dismissSheet = {
                         coroutine.launch {
                             splitExpenseViewModel.resetUpdateOrDeleteState()
                             editExpenseBottomSheetState.hide()
                         }
+                    },
+                    onFormFieldDone = { data ->
+                        executeExpenseUpdateDataAfterFormSubmission(
+                            data = data,
+                            groupItem = groupItem,
+                            collaboratorItem = collaboratorItem,
+                            expense = expense,
+                            splitExpenseViewModel = splitExpenseViewModel
+                        )
                     }
                 )
             }
@@ -419,6 +402,70 @@ fun ExpenseScreen(
             }
         }
     }
+}
+
+fun executeExpenseCreationDataAfterFormSubmission(
+    data: Map<String, String>,
+    grpItem: GroupExpenseResponseDto,
+    collaboratorItem: GroupExpenseResponseDto.Collaborator?,
+    splitExpenseViewModel: SplitExpenseViewModel,
+) {
+    data.let { validRequestData ->
+        grpItem.id?.let { grpId ->
+            collaboratorItem?.id?.let { collaboratorId ->
+                (grpId to collaboratorId)
+            }
+        }?.let { (grpId, collaboratorId) ->
+            prepareExpenseRequest(
+                value = validRequestData,
+                alteringState = ExpenseAlterState.CREATE
+            ).copy(
+                addedByCollaboratorId = collaboratorId,
+                groupId = grpId
+            ).let { request ->
+                splitExpenseViewModel.startExpenseChosenProcess(
+                    expenseState = ExpenseState.CREATE,
+                    expenseUpdateDeleteRequestPostData = ExpenseUpdateDeleteRequestPostData(
+                        expenseRequestData = request
+                    )
+                )
+            }
+        }
+    }
+}
+
+fun executeExpenseUpdateDataAfterFormSubmission(
+    data: Map<String, String>,
+    groupItem: GroupExpenseResponseDto,
+    collaboratorItem: GroupExpenseResponseDto.Collaborator?,
+    splitExpenseViewModel: SplitExpenseViewModel,
+    expense: GroupExpenseResponseDto.Collaborator.AllExpenses.Expense
+) {
+    (data.let { validRequestData ->
+        groupItem.id?.let { grpId ->
+            collaboratorItem?.id?.let { collaboratorId ->
+                (grpId to collaboratorId)
+            }
+        }?.let { (grpId, collaboratorId) ->
+            prepareExpenseRequest(
+                value = validRequestData,
+                alteringState = ExpenseAlterState.UPDATE
+            ).copy(
+                addedByCollaboratorId = collaboratorId,
+                groupId = grpId
+            ).let { request ->
+                if(request != ExpenseRequestDto.default()) {
+                    splitExpenseViewModel.startExpenseChosenProcess(
+                        expenseState = ExpenseState.UPDATE,
+                        expenseUpdateDeleteRequestPostData = ExpenseUpdateDeleteRequestPostData(
+                            expenseCreationId = expense.eCreationId,
+                            expenseRequestData = request
+                        )
+                    )
+                }
+            }
+        }
+    })
 }
 
 @Composable
@@ -512,7 +559,6 @@ fun ExpenseTabsScreen(
 
 
     TabRow(
-        modifier = Modifier.padding(horizontal = dp16),
         containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
         selectedTabIndex = selectedTabIndex,
         indicator = { tabPositions ->
@@ -547,7 +593,7 @@ fun ExpenseTabsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
-            .padding(dp16)
+            .padding(vertical = dp16)
     ) {
 
         Text(
@@ -830,26 +876,33 @@ fun ExpenseCard(
                     vSpace = dp8
                 )
 
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(
-                            style = MaterialTheme.typography.labelMedium.toSpanStyle().copy(
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(
-                                    alpha = 0.6f
+                Column {
+                    Text(
+                        text = "Added by ‣",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                alpha = 0.6f
+                            )
+                        )
+                    )
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(
+                                style = MaterialTheme.typography.bodySmall.toSpanStyle().copy(
+                                    color = MaterialTheme.colorScheme.inversePrimary
                                 )
-                            )
-                        ) {
-                            append("Added by | ")
-                        }
-                        withStyle(
-                            style = MaterialTheme.typography.bodySmall.toSpanStyle().copy(
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        ) {
-                            append("${groupItem.getCollaboratorName(item.addedByCollaboratorId)} , ${formattedServerDateTime(item.createdOn)}")
-                        }
-                    })
-
+                            ) {
+                                append("${groupItem.getCollaboratorName(item.addedByCollaboratorId)} ∙ ")
+                            }
+                            withStyle(
+                                style = MaterialTheme.typography.bodySmall.toSpanStyle().copy(
+                                    color = MaterialTheme.colorScheme.inversePrimary
+                                )
+                            ) {
+                                append(formattedServerDateTime(item.createdOn))
+                            }
+                        })
+                }
             }
 
             /*if (allExpenses[index].isSettled == true)
