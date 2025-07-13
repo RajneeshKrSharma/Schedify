@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -21,11 +24,14 @@ import com.unique.schedify.core.presentation.utils.LOGIN_GRAPH_NAME
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
 import com.unique.schedify.post_auth.post_auth_loading.PostAuthConsentUiScreen
 import com.unique.schedify.post_auth.post_auth_loading.PostAuthDownloadAndSaveUiScreen
+import com.unique.schedify.post_auth.schedule_list.presentation.ScheduleListScreen
+import com.unique.schedify.post_auth.schedule_list.presentation.ScheduleListViewModel
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
 import com.unique.schedify.post_auth.split_expense.presentation.ExpenseScreen
 import com.unique.schedify.post_auth.split_expense.presentation.GroupListScreen
 import com.unique.schedify.post_auth.split_expense.presentation.LoadCollaboratorScreen
 import com.unique.schedify.post_auth.split_expense.presentation.SplitExpenseViewModel
+import com.unique.schedify.post_auth.user_mapped_weather.presentation.UserMappedWeatherScreen
 import com.unique.schedify.pre_auth.pre_auth_loading.presentation.PreAuthConsentUiScreen
 import com.unique.schedify.pre_auth.pre_auth_loading.presentation.PreAuthDownloadAndSaveUiScreen
 import com.unique.schedify.pre_auth.presentation.Screen
@@ -59,7 +65,17 @@ class MainActivity : ComponentActivity() {
                     }
 
                     navigation(startDestination = Screen.LoginScreen.route, route = LOGIN_GRAPH_NAME) {
-                        composable(Screen.LoginScreen.route) { backStackEntry ->
+                        composable(
+                            Screen.LoginScreen.route,
+                            exitTransition = { slideOutHorizontally(
+                                targetOffsetX = { -it },
+                                animationSpec = tween(durationMillis = 500)
+                            ) },
+                            popEnterTransition = { slideInHorizontally(
+                                initialOffsetX = { -it },
+                                animationSpec = tween(durationMillis = 500)
+                            ) }
+                        ) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(LOGIN_GRAPH_NAME)
                             }
@@ -68,7 +84,17 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(
-                            route = Screen.OtpInputScreen.route
+                            route = Screen.OtpInputScreen.route,
+                            exitTransition = {
+                                slideOutHorizontally(
+                                targetOffsetX = { it },
+                                animationSpec = tween(durationMillis = 500)
+                            ) },
+                            popEnterTransition = {
+                                slideInHorizontally(
+                                initialOffsetX = { -it },
+                                animationSpec = tween(durationMillis = 500)
+                            ) }
                         ) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(LOGIN_GRAPH_NAME)
@@ -122,10 +148,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    composable(route = Screen.SimpleScheduleList.route) {
-
-                    }
-
                     composable(route = Screen.PreAuthConsentScreen.route) {
                         PreAuthConsentUiScreen(navController = navController)
                     }
@@ -137,6 +159,18 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(route = Screen.PostAuthDownloadAndSaveScreen.route) {
                         PostAuthDownloadAndSaveUiScreen(navController = navController)
+                    }
+                    composable(route = Screen.UserMappedWeatherScreen.route) {
+                        UserMappedWeatherScreen(navController = navController)
+                    }
+
+                    // Schedule List Section
+                    composable(route = Screen.ScheduleListItem.route) {
+                        val scheduleListViewModel : ScheduleListViewModel = hiltViewModel()
+                        ScheduleListScreen(
+                            navController,
+                            scheduleListViewModel
+                        )
                     }
                 }
             }

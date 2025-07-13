@@ -12,7 +12,7 @@ data class ExpenseRequestDto(
     @SerializedName("eQtyUnit")
     val itemQuantityUnit: String,
 
-    @SerializedName("eAmt")
+    @SerializedName("eRawAmt")
     val itemAmount: Double,
 
     @SerializedName("eDescription")
@@ -42,6 +42,6 @@ data class ExpenseRequestDto(
 }
 
 data class ExpenseUpdateDeleteRequestPostData(
-    val id: Int? = null,
+    val expenseCreationId: String? = null,
     val expenseRequestData: ExpenseRequestDto? = null
 )

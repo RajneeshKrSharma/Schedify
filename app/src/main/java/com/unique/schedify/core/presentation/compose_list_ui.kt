@@ -11,8 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.unique.schedify.R
@@ -23,8 +21,7 @@ import com.unique.schedify.core.presentation.common_composables.PageFallAnimated
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp8
-import com.unique.schedify.core.presentation.utils.size_units.sp24
-import com.unique.schedify.core.presentation.utils.ui_utils.baseBgGradient
+import com.unique.schedify.core.presentation.utils.ui_utils.AppBaseGradients
 import com.unique.schedify.post_auth.split_expense.presentation.utils.EmptyDataUi
 
 abstract class ListUi {
@@ -43,7 +40,7 @@ abstract class ListUi {
             topBar = topAppBar,
             modifier = modifier,
             navController = navController,
-            brush = baseBgGradient
+            brush = AppBaseGradients.baseBgDarkGradient()
         ) {
             Column(
                 modifier = Modifier
@@ -57,8 +54,7 @@ abstract class ListUi {
                             modifier = Modifier
                                 .padding(start = dp16, top = dp16),
                             text = stringResource(R.string.the_faves_picks_for_you),
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontSize = sp24,
+                            style = MaterialTheme.typography.titleLarge.copy(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                         )
@@ -66,26 +62,17 @@ abstract class ListUi {
                         Spacer(modifier = Modifier.height(dp16))
 
                         InfiniteAutoSlidingCarousel(
-                            modifier = Modifier.weight(0.45f),
+                            modifier = Modifier.weight(0.50f),
                             carouselData
-                        )
-
-                        ListUiComposable(
-                            modifier = Modifier.weight(0.55f),
-                            title = listUiTitle,
-                            navController = navController
                         )
                     }
                 }
 
-                if (listOfCarouselData() == null) {
-                    ListUiComposable(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        title = listUiTitle,
-                        navController = navController
-                    )
-                }
+                ListUiComposable(
+                    modifier = Modifier.weight(0.50f),
+                    title = listUiTitle,
+                    navController = navController
+                )
             }
             content?.invoke()
         }
@@ -103,14 +90,8 @@ abstract class ListUi {
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontSize = sp24,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    shadow = Shadow(
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        offset = Offset(3f, 3f),
-                        blurRadius = 2f
-                    )
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             )
 
@@ -121,13 +102,13 @@ abstract class ListUi {
                     listOfScreens = listOfCellDetails()
                 ) { selectedScreenOption ->
                     Navigation.navigateToScreen(
-                        navigateTo = selectedScreenOption, 
+                        navigateTo = selectedScreenOption,
                         navController = navController
                     )
                 }
             else {
                 EmptyDataUi(
-                    R.drawable.schedify,
+                    imageUrl = "",
                     msg = stringResource(R.string.listofcelldetails_is_null),
                 )
             }

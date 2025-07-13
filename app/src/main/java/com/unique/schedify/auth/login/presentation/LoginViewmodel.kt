@@ -3,9 +3,7 @@ package com.unique.schedify.auth.login.presentation
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -18,6 +16,7 @@ import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.common.api.Scope
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import com.unique.schedify.R
 import com.unique.schedify.auth.login.data.remote.dto.ConvertAccessTokenRequestDto
 import com.unique.schedify.auth.login.data.remote.dto.ConvertAccessTokenResponseDto
 import com.unique.schedify.auth.login.data.remote.dto.GetOtpRequestDto
@@ -31,6 +30,7 @@ import com.unique.schedify.auth.login.domain.use_case.LoginViaOtpUseCase
 import com.unique.schedify.auth.login.domain.use_case.OAuthAccessTokenUseCase
 import com.unique.schedify.auth.login.domain.use_case.RequestOtpUseCase
 import com.unique.schedify.core.config.SharedPrefConfig
+import com.unique.schedify.core.presentation.base_composables.ResourceProvider
 import com.unique.schedify.core.util.ApiResponseResource
 import com.unique.schedify.core.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,7 +45,8 @@ class LoginViewmodel @Inject constructor(
     private val loginViaOtpUseCase: LoginViaOtpUseCase,
     private val oAuthAccessTokenUseCase: OAuthAccessTokenUseCase,
     private val convertAccessTokenUseCase: ConvertAccessTokenUseCase,
-    private val sharedPrefConfig: SharedPrefConfig
+    private val sharedPrefConfig: SharedPrefConfig,
+    private val resourceProvider: ResourceProvider
 ) : ViewModel() {
 
     private val _getOtpState = mutableStateOf<Resource<GetOtpResponseDto>>(Resource.Default())
@@ -64,48 +65,57 @@ class LoginViewmodel @Inject constructor(
     private val _convertAccessTokenState = mutableStateOf<Resource<ConvertAccessTokenResponseDto>>(Resource.Default())
     val convertAccessTokenState: State<Resource<ConvertAccessTokenResponseDto>> = _convertAccessTokenState
 
-    val email = mutableStateOf("")
-    var otpField = mutableStateOf("")
+    private val _resentOtpBtnState = mutableStateOf(false)
+    val resentOtpBtnState: State<Boolean> = _resentOtpBtnState
 
-    fun getOtp(emailId: String) {
+    val email = mutableStateOf("")
+
+    fun getOtp() {
         viewModelScope.launch {
             _getOtpState.value = Resource.Loading()
-            with(requestOtpUseCase.execute(GetOtpRequestDto(emailId = emailId))) {
-                when (this) {
-                    is ApiResponseResource.Success -> {
-                        _getOtpState.value = Resource.Success(this.data)
-                    }
+            email.value.takeIf { it.isNotEmpty() }?.let { emailId ->
+                with(requestOtpUseCase.execute(GetOtpRequestDto(emailId = emailId))) {
+                    when (this) {
+                        is ApiResponseResource.Success -> {
+                            _getOtpState.value = Resource.Success(this.data)
+                        }
 
-                    is ApiResponseResource.Error -> {
-                        _getOtpState.value = Resource.Error(this.errorMessage)
+                        is ApiResponseResource.Error -> {
+                            _getOtpState.value = Resource.Error(this.errorMessage)
+                        }
                     }
                 }
+            } ?: run {
+                _getOtpState.value = Resource.Error(resourceProvider.getString(R.string.please_provide_email_id))
             }
         }
     }
 
-    fun resetOtpState() {
+    fun resetToInitialState() {
         _getOtpState.value = Resource.Default()
+        email.value = ""
     }
 
     fun loginViaOtp(loginRequest: LoginViaOtpRequestDto) {
         viewModelScope.launch {
             _loginViaOtpState.value = Resource.Loading()
-            with(loginViaOtpUseCase.execute(
-                sharedPrefConfig.getFcmToken()?.let { fcmToken ->
-                    loginRequest.copy(fcmToken = fcmToken)
-                } ?: loginRequest)
-            ) {
-                when (this) {
-                    is ApiResponseResource.Error -> _loginViaOtpState.value = Resource.Error(this.errorMessage)
-                    is ApiResponseResource.Success -> {
-                        sharedPrefConfig.saveAuthToken(data.data?.authData?.key ?: "")
-                        sharedPrefConfig.saveAuthUserId(data.data?.authData?.user ?: -1)
-                        sharedPrefConfig.saveAuthUserEmailId(data.data?.emailId ?: "")
-                        sharedPrefConfig.saveIsUserViaOtp(true)
-                        _loginViaOtpState.value = Resource.Success(this.data)
+            sharedPrefConfig.getFcmToken()?.let { fcmToken ->
+                with(loginViaOtpUseCase.execute(loginRequest.copy(fcmToken = fcmToken))) {
+                    when (this) {
+                        is ApiResponseResource.Error -> {
+                            _loginViaOtpState.value = Resource.Error(this.errorMessage)
+                        }
+                        is ApiResponseResource.Success -> {
+                            sharedPrefConfig.saveAuthToken(data.data?.authData?.key ?: "")
+                            sharedPrefConfig.saveAuthUserId(data.data?.authData?.user ?: -1)
+                            sharedPrefConfig.saveAuthUserEmailId(data.data?.emailId ?: "")
+                            sharedPrefConfig.saveIsUserViaOtp(true)
+                            _loginViaOtpState.value = Resource.Success(this.data)
+                        }
                     }
                 }
+            } ?: run {
+                _loginViaOtpState.value = Resource.Error("Fcm token not found !")
             }
         }
     }
@@ -213,6 +223,8 @@ class LoginViewmodel @Inject constructor(
         }
     }
 
-
+    fun showResendOtp(value: Boolean) {
+        _resentOtpBtnState.value = value
+    }
 
 }

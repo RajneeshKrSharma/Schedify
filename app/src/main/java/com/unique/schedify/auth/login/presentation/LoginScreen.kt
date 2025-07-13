@@ -6,11 +6,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,47 +21,35 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.google.android.gms.auth.api.identity.Identity
 import com.unique.schedify.R
+import com.unique.schedify.auth.login.presentation.login_common.LoginInputField
 import com.unique.schedify.core.presentation.common_composables.DashedDivider
 import com.unique.schedify.core.presentation.common_composables.GradientButton
+import com.unique.schedify.core.presentation.common_composables.GradientCircularButton
 import com.unique.schedify.core.presentation.common_composables.LoadingUi
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp12
 import com.unique.schedify.core.presentation.utils.size_units.dp16
-import com.unique.schedify.core.presentation.utils.size_units.dp4
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp20
-import com.unique.schedify.core.presentation.utils.size_units.sp24
 import com.unique.schedify.core.presentation.utils.size_units.sp32
-import com.unique.schedify.core.presentation.utils.size_units.sp36
-import com.unique.schedify.core.presentation.utils.size_units.sp48
+import com.unique.schedify.core.presentation.utils.ui_utils.AppBaseGradients
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.core.util.Resource
 import com.unique.schedify.core.util.isEmailValid
@@ -105,156 +93,113 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                brush = Brush.verticalGradient(
-                    colorStops = arrayOf(
-                        0.0f to Color(0xFFFFFFFF),
-                        0.3f to Color(0xFFFFFFFF),
-                        1.0f to Color(0xFF610AFF)
-                    )
-                )
-            )
-        ,
+                brush = AppBaseGradients.baseBgGradient()
+            ),
         contentAlignment = Alignment.Center
 
     ) {
-        when(val state = viewModel.getOtpState.value) {
-            is Resource.Default -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(dp16)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(dp16),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Card(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(dp16),
+                elevation = CardDefaults.cardElevation(dp8),
+                colors = CardDefaults.cardColors(containerColor =
+                MaterialTheme.colorScheme.onSecondaryContainer)
+            ) {
+                Box(
+                    modifier = Modifier.height(IntrinsicSize.Min)
                 ) {
-
-                    Box {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(dp16),
+                        verticalArrangement = Arrangement.SpaceEvenly
+                    ) {
                         Column(
                             modifier = Modifier
-                                .fillMaxSize(),
+                                .padding(horizontal = dp8, vertical = dp16),
+                            verticalArrangement = Arrangement.SpaceAround,
+                            horizontalAlignment = Alignment.Start
                         ) {
-                            Image(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(0.65f),
-                                painter = painterResource(R.drawable.schedify_login),
-                                contentScale = ContentScale.Fit,
-                                contentDescription = ""
+                            Text(
+                                text = stringResource(R.string.guest),
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontSize = sp32,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
                             )
-                            Spacer(
-                                modifier = Modifier
-                                    .weight(0.35f)
-                                    .background(color = Color.Cyan)
+                            Spacer(modifier = Modifier.height(dp8))
+                            Text(
+                                text = stringResource(R.string.let_s_get_you),
+                                style = MaterialTheme.typography.headlineLarge.copy(
+                                    fontWeight = FontWeight.W400,
+                                    fontSize = sp20,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
                             )
                         }
 
-                        Column(
+                        CreateLoginUI(
+                            viewModel = viewModel
+                        )
+
+                        Row(
                             modifier = Modifier
-                                .fillMaxSize(),
+                                .fillMaxWidth()
+                                .padding(horizontal = dp16, vertical = dp12),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-
-                            Spacer(
+                            DashedDivider(
                                 modifier = Modifier
-                                    .weight(0.6f)
+                                    .weight(0.5f),
+                                dividerColor = MaterialTheme.colorScheme.inversePrimary
                             )
-
-                            Column(
-                                modifier = Modifier
-                                    .padding(horizontal = dp8, vertical = dp16),
-                                verticalArrangement = Arrangement.SpaceAround,
-                                horizontalAlignment = Alignment.Start
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.guest),
-                                    style = MaterialTheme.typography.headlineLarge.copy(
-                                        fontSize = sp32,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        shadow = Shadow(
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                            offset = Offset(4f, 4f),
-                                            blurRadius = 2f
-                                        )
-                                    )
+                            Text(
+                                text = " OR ",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    MaterialTheme.colorScheme.inversePrimary
                                 )
-                                Spacer(modifier = Modifier.width(dp8))
-                                Text(
-                                    text = stringResource(R.string.let_s_get_you),
-                                    style = MaterialTheme.typography.headlineLarge.copy(
-                                        fontWeight = FontWeight.W400,
-                                        fontSize = sp24,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        shadow = Shadow(
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                            offset = Offset(3f, 3f),
-                                            blurRadius = 2f
-                                        )
-                                    )
-                                )
-                            }
-
-                            Card(
+                            )
+                            DashedDivider(
                                 modifier = Modifier
-                                    .padding(dp8)
-                                    .wrapContentHeight()
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(dp16),
-                                elevation = CardDefaults.cardElevation(dp8),
-                                colors = CardDefaults.cardColors(containerColor =
-                                    MaterialTheme.colorScheme.onSecondaryContainer)
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight()
-                                        .padding(dp16),
-                                    verticalArrangement = Arrangement.SpaceEvenly
-                                ) {
-                                    CreateLoginUI(
-                                        viewModel = viewModel
-                                    )
+                                    .weight(0.5f),
+                                dividerColor = MaterialTheme.colorScheme.inversePrimary
+                            )
+                        }
 
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = dp16, vertical = dp12),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        DashedDivider(
-                                            dividerModifier = Modifier
-                                                .weight(0.5f),
-                                            dividerColor = MaterialTheme.colorScheme.inversePrimary
-                                        )
-                                        Text(
-                                            text = "OR",
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                MaterialTheme.colorScheme.inversePrimary
-                                            ))
-                                        DashedDivider(
-                                            dividerModifier = Modifier
-                                                .weight(0.5f),
-                                            dividerColor = MaterialTheme.colorScheme.inversePrimary
-                                        )
-                                    }
+                        Spacer(modifier = Modifier.height(dp8))
 
-                                    GradientButton(
-                                        text = stringResource(R.string.login_via_google),
-                                        textStyle = MaterialTheme.typography.titleMedium.copy(
-                                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                                        ),
-                                        btnGradient = Brush.horizontalGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.onPrimaryContainer,
-                                                MaterialTheme.colorScheme.onPrimaryContainer,
-                                            )
-                                        ),
-                                        icon = R.drawable.google_icon,
-                                        iconModifier = Modifier.size(20.dp)
-                                    ) {
-                                        viewModel.onSignInWithGoogle(context = context)
-                                    }
-                                }
-                            }
+                        GradientButton(
+                            text = stringResource(R.string.login_via_google),
+                            textStyle = MaterialTheme.typography.titleMedium.copy(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            ),
+                            btnGradient = Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.onPrimaryContainer,
+                                    MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                            ),
+                            icon = R.drawable.google_icon,
+                            iconModifier = Modifier.size(20.dp)
+                        ) {
+                            viewModel.onSignInWithGoogle(context = context)
                         }
                     }
                 }
             }
+        }
+
+        when(val state = viewModel.getOtpState.value) {
+            is Resource.Default -> {}
             is Resource.Error -> {
                 val errorMsg = state.message ?: "Error in get otp"
                 Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
@@ -272,24 +217,6 @@ fun LoginScreen(
     }
 }
 
-
-@Composable
-fun LoginButton(
-    btnName: String,
-    isEnabled: Boolean = false,
-    onButtonPressed: () -> Unit
-) {
-    GradientButton(
-        text = btnName,
-        textStyle = MaterialTheme.typography.titleLarge.copy(
-            color = MaterialTheme.colorScheme.onSecondaryContainer
-        ),
-        enabled = isEnabled,
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onButtonPressed
-    )
-}
-
 @Composable
 fun CreateLoginUI(
     viewModel: LoginViewmodel
@@ -304,7 +231,7 @@ fun CreateLoginUI(
             loginViewmodel = viewModel,
             onRequestOtp = {
                 keyboardController?.hide()
-                viewModel.getOtp(emailId = viewModel.email.value)
+                viewModel.getOtp()
             }
         )
     }
@@ -315,39 +242,24 @@ fun EmailInputFieldUi(
     loginViewmodel: LoginViewmodel,
     onRequestOtp: () -> Unit
 ) {
-    val emailIdState = loginViewmodel.email
 
-    Column {
-        OutlinedTextField(
-            value = emailIdState.value,
-            onValueChange = { newValue ->
-                emailIdState.value = newValue
-            },
-            label = { Text(stringResource(R.string.email_id)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            modifier = Modifier
-                .fillMaxWidth(),
+    Row(
+        modifier = Modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LoginInputField(
+            modifier = Modifier.weight(1f),
+            loginViewmodel = loginViewmodel,
             enabled = loginViewmodel.getOtpState.value !is Resource.Success,
-            textStyle = MaterialTheme.typography.titleMedium.copy(
-                color = MaterialTheme.colorScheme.primary,
-            ),
-            supportingText = {
-                if (emailIdState.value.isNotEmpty() && emailIdState.value.isEmailValid().not()) {
-                    Text(
-                        stringResource(R.string.invalid_email_format),
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    )
-                }
-            },
+            onEmailValidDoneCallback = {
+                onRequestOtp()
+            }
         )
 
-        Spacer(modifier = Modifier.height(dp8))
+        Spacer(modifier = Modifier.width(dp8))
 
-        LoginButton(
-            btnName = stringResource(R.string.request_otp),
-            isEnabled = loginViewmodel.email.value.isEmailValid()
+        GradientCircularButton(
+            enabled = loginViewmodel.email.value.isEmailValid(),
         ) {
             onRequestOtp()
         }

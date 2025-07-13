@@ -11,14 +11,6 @@ data class CollaboratorRequestDto (
     val groupId: Int? = null,
     @SerializedName("emailId")
     val emailId: String? = null,
-    @SerializedName("settle_modes")
-    val settleModes: List<String>? = null,
-    @SerializedName("settle_mediums")
-    val settleMediums: List<String>? = null,
-    @SerializedName("requested_payment_qr_url")
-    val requestedPaymentQrUrl: String? = null,
-    @SerializedName("redirect_upi_url")
-    val redirectUpiUrl: String? = null
 ) {
     companion object {
         fun empty() = CollaboratorRequestDto(
@@ -26,10 +18,6 @@ data class CollaboratorRequestDto (
             collaboratorName = null,
             groupId = 0,
             emailId = null,
-            settleModes = null,
-            settleMediums = null,
-            requestedPaymentQrUrl = null,
-            redirectUpiUrl = null
         )
     }
 }

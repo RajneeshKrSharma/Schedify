@@ -21,4 +21,10 @@ object Api {
 
     //WEATHER USER MAPPED APIS
     const val USER_MAPPED_WEATHER_DATA = "/api/weather/user-mapped-forecast-data"
+
+    const val SCHEDULE_LIST = "api/schedule-list/schedule-items"
+    const val UPLOAD_ATTACHMENTS = "api/schedule-list/schedule-items/upload-attachments"
+    const val PIN_CODE_VERIFY = "https://api.postalpincode.in/pincode/"
+    const val ADD_ADDRESS = "/api/address/pincode"
+    const val GET_STATUS = "/api/weather/get-status"
 }

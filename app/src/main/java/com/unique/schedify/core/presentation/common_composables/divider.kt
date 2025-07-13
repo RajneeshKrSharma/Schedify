@@ -26,14 +26,14 @@ import com.unique.schedify.core.presentation.utils.size_units.dp8
 
 @Composable
 fun DashedDivider(
-    dividerModifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
     dividerHeight: Dp = dp1,
-    vhSpace: Dp = dp0, // Set default to 0 if vertical space not needed
+    vSpace: Dp = dp0, // Set default to 0 if vertical space not needed
     dividerColor: Color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
 ) {
     Box(
-        modifier = dividerModifier
-            .padding(vertical = vhSpace)
+        modifier = modifier
+            .padding(vertical = vSpace)
             .height(dividerHeight)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {

@@ -1,6 +1,8 @@
 package com.unique.schedify.auth.login.presentation
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,29 +13,42 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.unique.schedify.R
 import com.unique.schedify.auth.login.data.remote.dto.LoginViaOtpRequestDto
+import com.unique.schedify.auth.login.presentation.login_common.LoginInputField
+import com.unique.schedify.core.presentation.common_composables.GradientButton
 import com.unique.schedify.core.presentation.common_composables.LoadingUi
+import com.unique.schedify.core.presentation.common_composables.OutlinedGradientButton
 import com.unique.schedify.core.presentation.common_composables.SquareBoundaryProgressBar
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp16
@@ -41,6 +56,7 @@ import com.unique.schedify.core.presentation.utils.size_units.dp60
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp16
 import com.unique.schedify.core.presentation.utils.size_units.sp28
+import com.unique.schedify.core.presentation.utils.ui_utils.AppBaseGradients
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.core.util.MaxOtpField
 import com.unique.schedify.core.util.OtpExpiryInfo
@@ -52,19 +68,35 @@ fun OtpInputScreen(
     viewModel: LoginViewmodel = hiltViewModel(),
     navController: NavController,
 ) {
+
+    BackHandler {
+        viewModel.resetToInitialState()
+        navController.popBackStack()
+    }
+
     Box(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .background(brush = AppBaseGradients.baseBgGradient()),
         contentAlignment = Alignment.Center
 
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(dp16)
+                .padding(dp16),
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier.weight(0.6f)
+
+            Card(
+                modifier = Modifier
+                    .padding(dp8)
+                    .wrapContentHeight()
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(dp16),
+                elevation = CardDefaults.cardElevation(dp8),
+                colors = CardDefaults.cardColors(containerColor =
+                MaterialTheme.colorScheme.onSecondaryContainer)
             ) {
                 CreateOtpUI(
                     viewModel = viewModel,
@@ -75,6 +107,7 @@ fun OtpInputScreen(
 
         with(viewModel) {
             if (getOtpState.value is Resource.Loading
+                || loginViaOtpState.value is Resource.Loading
                 || oAuthAccessTokenState.value is Resource.Loading
                 || convertAccessTokenState.value is Resource.Loading
             ) {
@@ -91,40 +124,94 @@ fun CreateOtpUI(
 ) {
     val context = LocalContext.current
 
-    if (viewModel.loginViaOtpState.value is Resource.Success
+    val showResendOtpBtn by rememberUpdatedState(viewModel.resentOtpBtnState.value)
+    val loginViaOtpState = viewModel.loginViaOtpState.value
+
+    if (loginViaOtpState is Resource.Success
         || viewModel.convertAccessTokenState.value is Resource.Success
     ) {
         Navigation.navigateAndClearBackStackScreen(
-            navigateTo = AvailableScreens.PostAuth.PostAuthConsentScreen,
+            navigateTo = AvailableScreens.PostAuth.PostAuthDownloadAndSaveScreen,
             navController = navController
         )
     }
 
+    else if (loginViaOtpState is Resource.Error) {
+        Toast.makeText(context, loginViaOtpState.message, Toast.LENGTH_SHORT).show()
+    }
+
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(dp16),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            modifier = Modifier.align(Alignment.Start),
-            text = "Enter Otp",
-            style = MaterialTheme.typography.headlineLarge,
-        )
+        if(showResendOtpBtn) {
+            Text(
+                modifier = Modifier.align(Alignment.Start),
+                text = stringResource(R.string.request_otp),
+                style = MaterialTheme.typography.headlineMedium,
+            )
 
-        Spacer(modifier = Modifier.height(dp8))
+            LoginInputField(
+                modifier = Modifier.fillMaxWidth(),
+                loginViewmodel = viewModel,
+                enabled = false,
+            )
 
-        OtpInputFieldsUi(
-            viewModel = viewModel,
-            onTimerFinished = {
-                Toast.makeText(context, "OTP Expired", Toast.LENGTH_SHORT).show()
+            GradientButton(
+                textStyle = MaterialTheme.typography.titleLarge.copy(
+                    MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                text = stringResource(R.string.resend)
+            ) {
+                viewModel.getOtp()
+                viewModel.showResendOtp(false)
+            }
+
+            Spacer(modifier = Modifier.height(dp16))
+
+            OutlinedGradientButton(
+                textStyle = MaterialTheme.typography.titleLarge.copy(
+                    MaterialTheme.colorScheme.primary
+                ),
+                text = stringResource(R.string.try_with_another_emailid),
+                borderGradient = Brush.horizontalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        MaterialTheme.colorScheme.primary,
+                    )
+                )
+            ) {
                 Navigation.navigateAndClearBackStackScreen(
                     navigateTo = AvailableScreens.PreAuth.LoginScreen,
                     navController = navController
                 )
             }
-        )
+
+        } else {
+
+            Text(
+                modifier = Modifier.align(Alignment.Start),
+                text = stringResource(R.string.enter_otp),
+                style = MaterialTheme.typography.headlineMedium,
+            )
+
+            LoginInputField(
+                modifier = Modifier.fillMaxWidth(),
+                loginViewmodel = viewModel,
+                enabled = false,
+            )
+
+            OtpInputFieldsUi(
+                viewModel = viewModel,
+                onTimerFinished = {
+                    Toast.makeText(context,
+                        context.getString(R.string.otp_expired), Toast.LENGTH_SHORT).show()
+                    viewModel.showResendOtp(true)
+                }
+            )
+        }
     }
 }
 
@@ -166,11 +253,31 @@ fun OtpInputFieldsUi(
                         modifier = Modifier
                             .width(dp60)
                             .height(dp60),
-                        textStyle = MaterialTheme.typography.labelMedium.copy(
+                        textStyle = MaterialTheme.typography.headlineMedium.copy(
                             color = MaterialTheme.colorScheme.primary,
-                            fontSize = sp28
+                            fontSize = sp28,
+                            textAlign = TextAlign.Center
                         ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = if(index+1 == MaxOtpField) ImeAction.Done else ImeAction.None,
+                            autoCorrectEnabled = true
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if(index+1 == MaxOtpField) {
+                                    if (otpFieldState.all { it.isNotEmpty() }) {
+                                        keyboardController?.hide()
+                                        viewModel.loginViaOtp(
+                                            LoginViaOtpRequestDto.default().copy(
+                                                emailId = viewModel.email.value,
+                                                otp = otpFieldState.joinToString(""),
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        ),
                         singleLine = true
                     )
                     SquareBoundaryProgressBar(
@@ -185,22 +292,25 @@ fun OtpInputFieldsUi(
 
         Spacer(modifier = Modifier.height(dp16))
 
-        // ✅ Login Button
-        LoginButton(
-            btnName = stringResource(R.string.login_via_otp),
-            isEnabled = otpFieldState.all { it.isNotEmpty() }
-        ) {
-            if (otpFieldState.all { it.isNotEmpty() }) {
-                keyboardController?.hide()
-                viewModel.loginViaOtp(
-                    LoginViaOtpRequestDto(
-                        emailId = viewModel.email.value,
-                        otp = otpFieldState.joinToString(""),
-                        fcmToken = "RANDOM"
+        GradientButton(
+            text = stringResource(R.string.login_via_otp),
+            textStyle = MaterialTheme.typography.titleLarge.copy(
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            ),
+            enabled = otpFieldState.all { it.isNotEmpty() },
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                if (otpFieldState.all { it.isNotEmpty() }) {
+                    keyboardController?.hide()
+                    viewModel.loginViaOtp(
+                        LoginViaOtpRequestDto.default().copy(
+                            emailId = viewModel.email.value,
+                            otp = otpFieldState.joinToString(""),
+                        )
                     )
-                )
+                }
             }
-        }
+        )
     }
 }
 

@@ -35,33 +35,33 @@ fun ImageWithLoadingIndicator(
 
     var progress by remember { mutableFloatStateOf(0f) }
     var showLoader by remember { mutableStateOf(true) }
+    var isImageDone by remember { mutableStateOf(false) }
 
-    // Listen to painter state change
+    // Respond to painter state
     LaunchedEffect(painter.state) {
         when (painter.state) {
-            is AsyncImagePainter.State.Success -> {
-                progress = 100f
-                showLoader = false
-            }
-
+            is AsyncImagePainter.State.Success,
             is AsyncImagePainter.State.Error -> {
-                showLoader = false
+                isImageDone = true
             }
-
             else -> {
-                showLoader = true
+                isImageDone = false
             }
         }
     }
 
-    // Animate progress only while loading
-    LaunchedEffect(showLoader) {
-        while (showLoader && progress < 100f) {
-            delay(40)
-            // Only increase if still loading and not yet 100
-            if (progress < 95f && painter.state is AsyncImagePainter.State.Loading) {
-                progress = (progress + 5f).coerceAtMost(95f)
-            }
+    // Drive the progress continuously until 100
+    LaunchedEffect(isImageDone) {
+        while (!isImageDone && progress < 99f) {
+            delay(30)
+            progress = (progress + 1f).coerceAtMost(99f)
+        }
+
+        // Once image is done loading, finish progress to 100
+        if (isImageDone) {
+            progress = 100f
+            delay(300) // Optional: slight delay for smooth disappearance
+            showLoader = false
         }
     }
 
@@ -87,7 +87,7 @@ fun ImageWithLoadingIndicator(
             ) {
                 CircularProgressIndicator(
                     progress = { displayProgress / 100f },
-                    trackColor = ProgressIndicatorDefaults.circularDeterminateTrackColor,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerLow
                 )
                 Text(
                     text = "${displayProgress.toInt()}%",

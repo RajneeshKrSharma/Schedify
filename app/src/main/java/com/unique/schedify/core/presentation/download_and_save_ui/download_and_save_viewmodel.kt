@@ -3,7 +3,6 @@ package com.unique.schedify.core.presentation.download_and_save_ui
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.work.Constraints
@@ -30,20 +29,11 @@ class DownloadAndSaveViewModel @Inject constructor(
     private val _state = MutableStateFlow<Set<String>>(emptySet())
     val state: StateFlow<Set<String>> = _state
 
-    private val _stepNumber = mutableIntStateOf(1)
-    val stepNumber: State<Int> = _stepNumber
-
     private val _notificationPermissionGranted = mutableStateOf(false)
     val notificationPermissionGranted: State<Boolean> = _notificationPermissionGranted
 
-    private val _permissionRequested = mutableStateOf(false)
-    val permissionRequested: State<Boolean> = _permissionRequested
-
     private val _shouldShowSettings = mutableStateOf(false)
     val shouldShowSettings: State<Boolean> = _shouldShowSettings
-
-    private val _permissionInSettingsFlow = mutableStateOf(false)
-    val permissionInSettingsFlow: State<Boolean> = _permissionInSettingsFlow
 
 
     private val _isNotificationPermissionEligible = mutableStateOf(false)
@@ -56,42 +46,16 @@ class DownloadAndSaveViewModel @Inject constructor(
     /**
      * Called after permission dialog or return from settings
      */
-    fun onPermissionResult(isGranted: Boolean, shouldShowRationale: Boolean) {
+    fun onPermissionResult(isGranted: Boolean) {
         _notificationPermissionGranted.value = isGranted
+    }
 
-        if (isGranted) {
-            // ✅ If granted: clear all flags
-            _permissionRequested.value = false
-            _shouldShowSettings.value = false
-            _permissionInSettingsFlow.value = false
-            _stepNumber.intValue = 2
-        } else {
-            // ❌ Denied
-            _permissionRequested.value = true
-            _shouldShowSettings.value = !shouldShowRationale
-            _stepNumber.intValue = 1
-            // Don't reset permissionInSettingsFlow here, wait for Lifecycle.ON_RESUME to handle that
-        }
+    fun shouldShowNotificationSetting(isShow: Boolean) { // when value is true then do not show setting
+        _shouldShowSettings.value = isShow
     }
 
     fun checkIsNotificationPermissionEligible(isEligible: Boolean) {
         _isNotificationPermissionEligible.value = isEligible
-    }
-
-    /**
-     * Called before launching permission dialog again
-     */
-    fun resetRequestState() {
-        _permissionRequested.value = false
-        _stepNumber.intValue = 1
-    }
-
-    /**
-     * Called before opening app notification settings
-     */
-    fun markSettingsFlowStarted() {
-        _permissionInSettingsFlow.value = true
-        _stepNumber.intValue = 1
     }
 
     private fun updateState(newValue: String) {

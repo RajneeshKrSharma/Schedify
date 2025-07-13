@@ -16,7 +16,7 @@ import retrofit2.http.Query
 interface SplitExpenseApis: BaseApi {
     companion object {
         const val GROUP_ID = "group_id"
-        const val EXPENSE_ID = "expense_id"
+        const val EXPENSE_CREATION_ID = "eCreationId"
     }
 
     @GET(GROUP_EXPENSE)
@@ -61,12 +61,12 @@ interface SplitExpenseApis: BaseApi {
 
     @PATCH(EXPENSE)
     suspend fun updateExpense(
-        @Query(EXPENSE_ID) expenseId: Int,
+        @Query(EXPENSE_CREATION_ID) expenseCreationId: String,
         @Body expenseRequestDto: ExpenseRequestDto
     ): Response<Any>
 
     @DELETE(EXPENSE)
     suspend fun deleteExpense(
-        @Query(EXPENSE_ID) expenseId: Int,
+        @Query(EXPENSE_CREATION_ID) expenseCreationId: String,
     ): Response<Any>
 }

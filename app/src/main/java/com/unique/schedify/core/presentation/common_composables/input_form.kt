@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -22,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +35,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.unique.schedify.R
 import com.unique.schedify.core.presentation.utils.FormFieldType
@@ -66,9 +69,32 @@ fun RequiredLabel(label: String, isRequired: Boolean) {
 }
 
 @Composable
+fun getEditTextColors(): TextFieldColors =
+    TextFieldDefaults.colors(
+        focusedTextColor = MaterialTheme.colorScheme.primary,
+        unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+            alpha = 0.5f
+        ),
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+            alpha = 0.5f
+        ),
+        unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+        unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+            alpha = 0.5f
+        ),
+        disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+        errorIndicatorColor = MaterialTheme.colorScheme.secondary,
+        cursorColor = MaterialTheme.colorScheme.primary
+    )
+
+@Composable
 fun FormBuilder(
     fields: List<FormField>,
-    onFormChanged: (Map<String, String>) -> Unit
+    onFormChanged: (Map<String, String>) -> Unit,
+    onDone: () -> Unit,
 ) {
     val formState = remember { mutableStateMapOf<String, String>() }
 
@@ -84,94 +110,67 @@ fun FormBuilder(
     }
 
     Column {
-        fields.forEach { field ->
+        fields.forEachIndexed { index, field ->
             val isVisible = field.visibleIf?.let {
                 formState[it.fieldId]?.split(",")?.contains(it.expectedValue) == true
             } ?: true
 
-            if (!isVisible) return@forEach
+            if (!isVisible) return@forEachIndexed
 
             val isActuallyRequired = field.isRequired
+
+            val isLastField = fields.indexOfLast { visibleField ->
+                visibleField.visibleIf?.let {
+                    formState[it.fieldId]?.split(",")?.contains(it.expectedValue) == true
+                } ?: true
+            } == index
+
+            val imeAction = if (isLastField) ImeAction.Done else ImeAction.Next
+            val keyboardActions = KeyboardActions(
+                onDone = {
+                    if (isLastField) {
+                        onDone()
+                    }
+                }
+            )
 
             Spacer(modifier = Modifier.height(dp12))
 
             when (field.type) {
-                FormFieldType.TEXT -> {
+                FormFieldType.TEXT, FormFieldType.EMAIL, FormFieldType.NUMBER -> {
                     OutlinedTextField(
                         singleLine = true,
                         minLines = 1,
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Text
+                            keyboardType = when (field.type) {
+                                FormFieldType.EMAIL -> KeyboardType.Email
+                                FormFieldType.NUMBER -> KeyboardType.Number
+                                else -> KeyboardType.Text
+                            },
+                            imeAction = imeAction
                         ),
+                        keyboardActions = keyboardActions,
                         value = formState[field.id] ?: "",
                         onValueChange = { updateField(field.id, it) },
                         label = { RequiredLabel(field.label, isActuallyRequired) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                            focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
-                            errorIndicatorColor = MaterialTheme.colorScheme.secondary,
-                            cursorColor = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                }
-
-                FormFieldType.EMAIL -> {
-                    OutlinedTextField(
-                        singleLine = true,
-                        minLines = 1,
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Text
-                        ),
-                        value = formState[field.id] ?: "",
-                        onValueChange = { updateField(field.id, it) },
-                        label = { RequiredLabel(field.label, isActuallyRequired) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                            focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
-                            errorIndicatorColor = MaterialTheme.colorScheme.secondary,
-                            cursorColor = MaterialTheme.colorScheme.primary
-                        ),
+                        colors = getEditTextColors(),
                         supportingText = {
-                            if (formState[field.id]?.isNotEmpty() == true && formState[field.id]?.isEmailValid() == false) {
-                                Text(
-                                    stringResource(R.string.invalid_email_format),
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
-                                )
+                            when (field.type) {
+                                FormFieldType.EMAIL -> {
+                                    if (formState[field.id]?.isNotEmpty() == true && formState[field.id]?.isEmailValid() == false) {
+                                        Text(
+                                            stringResource(R.string.invalid_email_format),
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                        )
+                                    }
+                                }
+                                FormFieldType.NUMBER -> {}
+                                else -> {}
                             }
                         }
-                    )
-                }
-
-                FormFieldType.NUMBER -> {
-                    OutlinedTextField(
-                        singleLine = true,
-                        minLines = 1,
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
-                        ),
-                        value = formState[field.id] ?: "",
-                        onValueChange = { updateField(field.id, it) },
-                        label = { RequiredLabel(field.label, isActuallyRequired) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                            focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
-                            errorIndicatorColor = MaterialTheme.colorScheme.secondary,
-                            cursorColor = MaterialTheme.colorScheme.primary
-                        )
                     )
                 }
 
@@ -247,7 +246,27 @@ fun FormBuilder(
                             modifier = Modifier.fillMaxWidth(),
                             trailingIcon = {
                                 Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                            }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedTextColor = MaterialTheme.colorScheme.primary,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                    alpha = 0.5f
+                                ),
+                                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                    alpha = 0.5f
+                                ),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+                                    alpha = 0.5f
+                                ),
+                                disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
+                                errorIndicatorColor = MaterialTheme.colorScheme.secondary,
+                                cursorColor = MaterialTheme.colorScheme.primary
+                            )
+
                         )
                         DropdownMenu(
                             expanded = expanded,
