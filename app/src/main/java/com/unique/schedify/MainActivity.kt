@@ -64,50 +64,37 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(navController = navController)
                     }
 
-                    navigation(
-                        startDestination = Screen.LoginScreen.route,
-                        route = LOGIN_GRAPH_NAME
-                    ) {
+                    navigation(startDestination = Screen.LoginScreen.route, route = LOGIN_GRAPH_NAME) {
                         composable(
                             Screen.LoginScreen.route,
-                            exitTransition = {
-                                slideOutHorizontally(
-                                    targetOffsetX = { -it },
-                                    animationSpec = tween(durationMillis = 500)
-                                )
-                            },
-                            popEnterTransition = {
-                                slideInHorizontally(
-                                    initialOffsetX = { -it },
-                                    animationSpec = tween(durationMillis = 500)
-                                )
-                            }
+                            exitTransition = { slideOutHorizontally(
+                                targetOffsetX = { -it },
+                                animationSpec = tween(durationMillis = 500)
+                            ) },
+                            popEnterTransition = { slideInHorizontally(
+                                initialOffsetX = { -it },
+                                animationSpec = tween(durationMillis = 500)
+                            ) }
                         ) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(LOGIN_GRAPH_NAME)
                             }
                             val loginViewmodel: LoginViewmodel = hiltViewModel(parentEntry)
-                            LoginScreen(
-                                loginViewmodel,
-                                context = this@MainActivity,
-                                navController = navController
-                            )
+                            LoginScreen(loginViewmodel, context = this@MainActivity, navController = navController)
                         }
 
                         composable(
                             route = Screen.OtpInputScreen.route,
                             exitTransition = {
                                 slideOutHorizontally(
-                                    targetOffsetX = { it },
-                                    animationSpec = tween(durationMillis = 500)
-                                )
-                            },
+                                targetOffsetX = { it },
+                                animationSpec = tween(durationMillis = 500)
+                            ) },
                             popEnterTransition = {
                                 slideInHorizontally(
-                                    initialOffsetX = { -it },
-                                    animationSpec = tween(durationMillis = 500)
-                                )
-                            }
+                                initialOffsetX = { -it },
+                                animationSpec = tween(durationMillis = 500)
+                            ) }
                         ) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(LOGIN_GRAPH_NAME)
@@ -117,66 +104,42 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    navigation(
-                        startDestination = Screen.GroupListScreen.route,
-                        route = GROUP_GRAPH_NAME
-                    ) {
+                    navigation(startDestination = Screen.GroupListScreen.route, route = GROUP_GRAPH_NAME) {
                         composable(Screen.GroupListScreen.route) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
-                            val splitExpenseViewModel: SplitExpenseViewModel =
-                                hiltViewModel(parentEntry)
+                            val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry)
                             GroupListScreen(navController, splitExpenseViewModel)
                         }
 
                         composable(
                             route = "${Screen.GroupDetailedScreen.route}/{groupJson}",
-                            arguments = listOf(navArgument("groupJson") {
-                                type = NavType.StringType
-                            })
+                            arguments = listOf(navArgument("groupJson") { type = NavType.StringType })
                         ) { backStackEntry ->
 
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
-                            val splitExpenseViewModel: SplitExpenseViewModel =
-                                hiltViewModel(parentEntry) // Shared ViewModel
+                            val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry) // Shared ViewModel
 
-                            val groupJsonEncoded = backStackEntry.arguments?.getString("groupJson")
-                                ?: return@composable
-                            val groupJson = URLDecoder.decode(
-                                groupJsonEncoded,
-                                StandardCharsets.UTF_8.toString()
-                            )
-                            val groupItem =
-                                Gson().fromJson(groupJson, GroupExpenseResponseDto::class.java)
+                            val groupJsonEncoded = backStackEntry.arguments?.getString("groupJson") ?: return@composable
+                            val groupJson = URLDecoder.decode(groupJsonEncoded, StandardCharsets.UTF_8.toString())
+                            val groupItem = Gson().fromJson(groupJson, GroupExpenseResponseDto::class.java)
 
                             LoadCollaboratorScreen(navController, groupItem, splitExpenseViewModel)
                         }
 
                         composable(
                             route = "${Screen.ExpenseScreen.route}/{collaboratorJson}",
-                            arguments = listOf(navArgument("collaboratorJson") {
-                                type = NavType.StringType
-                            })
-                        ) { backStackEntry ->
+                            arguments = listOf(navArgument("collaboratorJson") { type = NavType.StringType })) { backStackEntry ->
                             val parentEntry = remember(backStackEntry) {
                                 navController.getBackStackEntry(GROUP_GRAPH_NAME)
                             }
-                            val splitExpenseViewModel: SplitExpenseViewModel =
-                                hiltViewModel(parentEntry)
-                            val collaboratorJsonEncoded =
-                                backStackEntry.arguments?.getString("collaboratorJson")
-                                    ?: return@composable
-                            val collaboratorJsonDecoded = URLDecoder.decode(
-                                collaboratorJsonEncoded,
-                                StandardCharsets.UTF_8.toString()
-                            )
-                            val collaboratorItem = Gson().fromJson(
-                                collaboratorJsonDecoded,
-                                GroupExpenseResponseDto.Collaborator::class.java
-                            )
+                            val splitExpenseViewModel: SplitExpenseViewModel = hiltViewModel(parentEntry)
+                            val collaboratorJsonEncoded = backStackEntry.arguments?.getString("collaboratorJson") ?: return@composable
+                            val collaboratorJsonDecoded = URLDecoder.decode(collaboratorJsonEncoded, StandardCharsets.UTF_8.toString())
+                            val collaboratorItem = Gson().fromJson(collaboratorJsonDecoded, GroupExpenseResponseDto.Collaborator::class.java)
                             ExpenseScreen(
                                 navController = navController,
                                 collaborator = collaboratorItem,
@@ -203,7 +166,7 @@ class MainActivity : ComponentActivity() {
 
                     // Schedule List Section
                     composable(route = Screen.ScheduleListItem.route) {
-                        val scheduleListViewModel: ScheduleListViewModel = hiltViewModel()
+                        val scheduleListViewModel : ScheduleListViewModel = hiltViewModel()
                         ScheduleListScreen(
                             navController,
                             scheduleListViewModel

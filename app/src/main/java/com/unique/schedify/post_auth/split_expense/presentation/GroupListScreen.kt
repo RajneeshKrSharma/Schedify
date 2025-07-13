@@ -204,12 +204,12 @@ fun GroupListScreen(
                                                     )
                                                 )
 
-                                                if (isOwner) {
+                                                if(isOwner) {
                                                     Row {
                                                         Icon(
-                                                            modifier = Modifier.clickable {
-                                                                isAlterOptionMenuVisible.value =
-                                                                    true
+                                                            modifier = Modifier.
+                                                            clickable {
+                                                                isAlterOptionMenuVisible.value = true
                                                             },
                                                             imageVector = Icons.Default.MoreVert,
                                                             contentDescription = "More options"
@@ -218,8 +218,7 @@ fun GroupListScreen(
                                                             containerColor = MaterialTheme.colorScheme.onSecondaryContainer,
                                                             expanded = isAlterOptionMenuVisible.value,
                                                             onDismissRequest = {
-                                                                isAlterOptionMenuVisible.value =
-                                                                    false
+                                                                isAlterOptionMenuVisible.value = false
                                                             }
                                                         ) {
                                                             DropdownMenuItem(
@@ -232,11 +231,8 @@ fun GroupListScreen(
                                                                             contentDescription = "",
                                                                             tint = MaterialTheme.colorScheme.onBackground
                                                                         )
-                                                                        Spacer(
-                                                                            modifier = Modifier.width(
-                                                                                dp4
-                                                                            )
-                                                                        )
+                                                                        Spacer(modifier = Modifier.width(
+                                                                            dp4))
                                                                         Text(
                                                                             stringResource(
                                                                                 R.string.edit
@@ -249,8 +245,7 @@ fun GroupListScreen(
                                                                     }
                                                                 },
                                                                 onClick = {
-                                                                    isAlterOptionMenuVisible.value =
-                                                                        false
+                                                                    isAlterOptionMenuVisible.value = false
                                                                     splitExpenseViewModel.performGroupAlteringActions(
                                                                         GroupState.UPDATE,
                                                                         groupExpenseResponseDto = listOfGroups[index]
@@ -267,11 +262,8 @@ fun GroupListScreen(
                                                                             contentDescription = "",
                                                                             tint = MaterialTheme.colorScheme.secondary
                                                                         )
-                                                                        Spacer(
-                                                                            modifier = Modifier.width(
-                                                                                dp4
-                                                                            )
-                                                                        )
+                                                                        Spacer(modifier = Modifier.width(
+                                                                            dp4))
                                                                         Text(
                                                                             stringResource(
                                                                                 R.string.delete
@@ -284,8 +276,7 @@ fun GroupListScreen(
                                                                     }
                                                                 },
                                                                 onClick = {
-                                                                    isAlterOptionMenuVisible.value =
-                                                                        false
+                                                                    isAlterOptionMenuVisible.value = false
                                                                     splitExpenseViewModel.performGroupAlteringActions(
                                                                         GroupState.DELETE,
                                                                         groupExpenseResponseDto = listOfGroups[index]
@@ -331,7 +322,7 @@ fun GroupListScreen(
                 }
                 with(splitExpenseViewModel) {
                     val state = updateDeleteInfoState.value
-                    when (state.perform) {
+                    when(state.perform) {
                         GroupState.CREATE -> {
                             coroutine.launch {
                                 addGroupBottomSheetState.show()
@@ -385,9 +376,8 @@ fun GroupListScreen(
                         splitExpenseViewModel.resetGroupState()
                     }
 
-                    if (groupState.value is Resource.Success &&
-                        getAllGroupDetails.value is Resource.Success
-                    ) {
+                    if(groupState.value is Resource.Success &&
+                        getAllGroupDetails.value is Resource.Success) {
                         groupState.value.data?.let { successMsg ->
                             Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
                             splitExpenseViewModel.resetGroupState()
@@ -427,10 +417,8 @@ fun GroupListScreen(
                 updateDeleteData.groupExpenseResponseDto?.let { updateDeleteNotNullData ->
                     GenericBottomSheet(
                         sheetState = updateGroupBottomSheetState,
-                        headingTitleText = stringResource(
-                            R.string.update,
-                            stringResource(R.string.group_simple)
-                        ),
+                        headingTitleText = stringResource(R.string.update,
+                            stringResource(R.string.group_simple)),
                         buttonText = stringResource(R.string.update),
                         formInputDataFields = buildUpdateGroupFormFields(updateDeleteNotNullData),
                         formOutputData = { data ->
@@ -458,7 +446,7 @@ fun GroupListScreen(
             }
         }
 
-        if (stateGroupDetails is Resource.Loading) {
+        if(stateGroupDetails is Resource.Loading) {
             LoadingUi()
         }
     }
@@ -473,7 +461,7 @@ fun executeGroupCreationDataAfterFormSubmission(
             value = validRequestData,
             alteringState = GroupAlterState.CREATE
         ).let { request ->
-            if (request != GroupRequestDto.empty()) {
+            if(request != GroupRequestDto.empty()) {
                 splitExpenseViewModel.startGroupChosenProcess(
                     groupState = GroupState.CREATE,
                     groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
@@ -495,7 +483,7 @@ fun executeGroupUpdateDataAfterFormSubmission(
             value = validRequestData,
             alteringState = GroupAlterState.UPDATE
         ).let { request ->
-            if (request != GroupRequestDto.empty()) {
+            if(request != GroupRequestDto.empty()) {
                 splitExpenseViewModel.startGroupChosenProcess(
                     groupState = GroupState.UPDATE,
                     groupUpdateDeleteRequestPostData = GroupUpdateDeleteRequestPostData(
@@ -511,14 +499,14 @@ fun executeGroupUpdateDataAfterFormSubmission(
 
 @Composable
 fun GroupTopBarActions(
-    onAddGroupButtonClick: () -> Unit
+    onAddGroupButtonClick:() -> Unit
 ) {
     AddGroupButton(onAddGroupButtonClick)
 }
 
 @Composable
 fun AddGroupButton(
-    onAddGroupButtonClick: () -> Unit
+    onAddGroupButtonClick:() -> Unit
 ) {
     ActionIcons(
         modifier = Modifier
