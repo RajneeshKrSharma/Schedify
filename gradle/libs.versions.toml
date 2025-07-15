@@ -28,6 +28,7 @@ firebase-plugin = "3.0.3"
 workRuntimeKtx = "2.10.1"
 hiltWork = "1.2.0"
 lottie-version = "6.3.0"
+google-services-plugin = "4.4.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -89,3 +90,4 @@ kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp"}
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "daggerVersion"}
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-plugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services-plugin" }

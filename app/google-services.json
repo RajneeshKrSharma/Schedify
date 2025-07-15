@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "265427182199",
+    "project_id": "schedify-f6331",
+    "storage_bucket": "schedify-f6331.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:265427182199:android:0a69fe7cfd84a1d6d85c72",
+        "android_client_info": {
+          "package_name": "com.unique.schedify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIHlY4__Sm4xFtZ2oV7l1BF4EVvxGnEm8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

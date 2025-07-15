@@ -1,3 +1,6 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,6 +9,7 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -18,6 +22,8 @@ android {
     val fProjectId: String = project.findProperty("FIREBASE_PROJECT_ID") as? String ?: "default_value"
     val fStorageBucket: String = project.findProperty("FIREBASE_STORAGE_BUCKET") as? String ?: "default_value"
 
+    flavorDimensions += "environment"
+
     defaultConfig {
         applicationId = "com.unique.schedify"
         minSdk = 24
@@ -26,23 +32,65 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        buildConfigField("String", "DECRYPT_KEY", mySecretKey)
-        buildConfigField("String", "FIREBASE_APP_KEY", fAppKey)
-        buildConfigField("String", "FIREBASE_APP_ID", fAppId)
-        buildConfigField("String", "FIREBASE_PROJECT_ID", fProjectId)
-        buildConfigField("String", "FIREBASE_STORAGE_BUCKET", fStorageBucket)
+
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(project.findProperty("RELEASE_STORE_FILE") as? String ?: "default_value")
+            storePassword = project.findProperty("RELEASE_STORE_PASSWORD") as? String ?: "default_value"
+            keyAlias = project.findProperty("RELEASE_KEY_ALIAS") as? String ?: "default_value"
+            keyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as? String ?: "default_value"
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
+
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+
+            buildConfigField("String", "DECRYPT_KEY", mySecretKey)
+            buildConfigField("String", "FIREBASE_APP_KEY", fAppKey)
+            buildConfigField("String", "FIREBASE_APP_ID", fAppId)
+            buildConfigField("String", "FIREBASE_PROJECT_ID", fProjectId)
+            buildConfigField("String", "FIREBASE_STORAGE_BUCKET", fStorageBucket)
+        }
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+
+            buildConfigField("String", "DECRYPT_KEY", mySecretKey)
+            buildConfigField("String", "FIREBASE_APP_KEY", fAppKey)
+            buildConfigField("String", "FIREBASE_APP_ID", fAppId)
+            buildConfigField("String", "FIREBASE_PROJECT_ID", fProjectId)
+            buildConfigField("String", "FIREBASE_STORAGE_BUCKET", fStorageBucket)
+        }
+        create("production") {
+            dimension = "environment"
+            // No suffixes for production
+            buildConfigField("String", "DECRYPT_KEY", mySecretKey)
+            buildConfigField("String", "FIREBASE_APP_KEY", fAppKey)
+            buildConfigField("String", "FIREBASE_APP_ID", fAppId)
+            buildConfigField("String", "FIREBASE_PROJECT_ID", fProjectId)
+            buildConfigField("String", "FIREBASE_STORAGE_BUCKET", fStorageBucket)
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -55,6 +103,19 @@ android {
     }
 
     android.buildFeatures.buildConfig = true
+
+    applicationVariants.all {
+        outputs.all {
+            val appName = "Schedify"
+            val buildTime = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(Date())
+            val variantName = name.replaceFirstChar { it.uppercaseChar() }
+
+            val fileName = "$appName-${variantName}-${buildTime}.apk"
+            if (this is com.android.build.gradle.internal.api.ApkVariantOutputImpl) {
+                outputFileName = fileName
+            }
+        }
+    }
 }
 
 dependencies {
