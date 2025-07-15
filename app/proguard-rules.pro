@@ -19,3 +19,20 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# --- RETROFIT ---
+-keep class retrofit2.** { *; }
+
+# Keep model classes with Gson annotations (IMP)
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Keep DTO with inner class used in response (IMP)
+-keep class com.unique.schedify.auth.login.**.dto.** { *; }
+-keep class com.unique.schedify.pre_auth.pre_auth_loading.**.dto.** { *; }
+-keep class com.unique.schedify.pre_auth.pre_auth_loading.**.dto.** { *; }
+-keep class com.unique.schedify.post_auth.post_auth_loading.**.dto.** { *; }
+
+# Keep coroutine (IMP)
+-keep class kotlin.coroutines.** { *; }
