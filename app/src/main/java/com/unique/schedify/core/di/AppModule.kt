@@ -3,6 +3,7 @@ package com.unique.schedify.core.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
+import com.unique.schedify.BuildConfig
 import com.unique.schedify.auth.login.data.remote.LoginApis
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.SplitExpenseApis
 import com.unique.schedify.core.ConnectivityChecker
@@ -33,34 +34,35 @@ object AppModule {
     @Provides
     @Singleton
     fun provideRetrofit(sharedPrefConfig: SharedPrefConfig): Retrofit {
+        val clientBuilder = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val originalRequest = chain.request()
+                val requestWithHeaders = originalRequest.newBuilder()
+                    .apply {
+                        addHeader("Content-Type", "application/json")
+                        addHeader("Accept", "application/json")
+                        sharedPrefConfig.getAuthToken()?.let { token ->
+                            if (sharedPrefConfig.isUserViaOtp())
+                                addHeader("Authorization", token)
+                            else
+                                addHeader("Authorization", "Bearer $token")
+                        }
+                    }
+                    .build()
+                chain.proceed(requestWithHeaders)
+            }
+
+        if (BuildConfig.DEBUG) {
+            clientBuilder.addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            })
+        }
+
         return Retrofit.Builder()
             .baseUrl(Api.BASE_URL)
-            //.addConverterFactory(EncryptedRequestConverterFactory(Gson()))
+            // .addConverterFactory(EncryptedRequestConverterFactory(Gson())) // if using encryption
             .addConverterFactory(GsonConverterFactory.create())
-            .client(
-                OkHttpClient.Builder()
-                    .addInterceptor { chain ->
-                        val originalRequest = chain.request()
-                        val requestWithHeaders = originalRequest.newBuilder()
-                            .apply {
-                                addHeader("Content-Type", "application/json")
-                                addHeader("Accept", "application/json")
-                                sharedPrefConfig.getAuthToken()?.let { token ->
-                                    if (sharedPrefConfig.isUserViaOtp())
-                                        addHeader("Authorization", token)
-                                    else
-                                        addHeader("Authorization", "Bearer $token")
-                                }
-                            }
-                            .build()
-                        chain.proceed(requestWithHeaders)
-                    }
-                    //.addInterceptor(ResponseDecryptInterceptors())
-                    .addInterceptor(HttpLoggingInterceptor().apply {
-                        level = HttpLoggingInterceptor.Level.BODY
-                    })
-                    .build()
-            )
+            .client(clientBuilder.build())
             .build()
     }
 

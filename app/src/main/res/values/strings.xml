@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Schedify</string>
-    <string name="google_app_id">1:265427182199:android:0a69fe7cfd84a1d6d85c72</string>
     <string name="select_to_proceed">Select to proceed . .</string>
     <string name="login">Login</string>
     <string name="location">Location</string>
