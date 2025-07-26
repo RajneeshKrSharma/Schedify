@@ -3,6 +3,7 @@ package com.unique.schedify.post_auth.split_expense.presentation.utils
 import androidx.compose.runtime.MutableState
 import com.unique.schedify.core.presentation.common_composables.FormField
 import com.unique.schedify.core.presentation.common_composables.VisibilityCondition
+import com.unique.schedify.core.presentation.utils.FormFieldErrorForId
 import com.unique.schedify.core.presentation.utils.FormFieldType
 import com.unique.schedify.post_auth.post_auth_utils.AddCollaboratorFields
 import com.unique.schedify.post_auth.post_auth_utils.AddExpenseFields
@@ -11,22 +12,6 @@ import com.unique.schedify.post_auth.post_auth_utils.EditCollaboratorFields
 import com.unique.schedify.post_auth.post_auth_utils.ExpenseQuantityUnitsOptions
 import com.unique.schedify.post_auth.post_auth_utils.ExpenseType
 import com.unique.schedify.post_auth.split_expense.data.remote.dto.GroupExpenseResponseDto
-
-fun isFormValid(
-    formFields: MutableState<List<FormField>>,
-    formResultedData: MutableState<Map<String, String>>
-): Boolean {
-    val isFormValid = formFields.value.all { field ->
-        val value = formResultedData.value[field.id]
-        val isVisible = field.visibleIf?.let {
-            formResultedData.value[it.fieldId]?.split(",")?.contains(it.expectedValue) == true
-        } ?: true
-
-        !isVisible || !field.isRequired || value?.isNotEmpty() == true
-    }
-
-    return isFormValid
-}
 
 fun buildAddGroupFormFields(): List<FormField> {
     return listOf(
@@ -59,7 +44,8 @@ fun buildAddCollaboratorFormFields(): List<FormField> {
             id = AddCollaboratorFields.COLLABORATOR_EMAIL_ID.name,
             label = AddCollaboratorFields.COLLABORATOR_EMAIL_ID.description,
             type = FormFieldType.EMAIL,
-            isRequired = true
+            isRequired = true,
+            formFieldErrorForId = FormFieldErrorForId.EMAIL_ID
         ),
     )
 }

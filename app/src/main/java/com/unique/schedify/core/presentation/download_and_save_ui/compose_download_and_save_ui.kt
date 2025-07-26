@@ -26,6 +26,9 @@ import androidx.navigation.NavController
 import com.unique.schedify.R
 import com.unique.schedify.core.presentation.base_composables.BaseCompose
 import com.unique.schedify.core.presentation.common_composables.CircularGradientProgressBar
+import com.unique.schedify.core.presentation.common_composables.ErrorUi
+import com.unique.schedify.core.presentation.download_and_save_ui.model.PostLoginPreRequisitesEvents
+import com.unique.schedify.core.presentation.download_and_save_ui.utility.DownloadWorkerStatus
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.sp14
@@ -56,13 +59,30 @@ abstract class DownloadAndSaveUi {
             )
         }
 
+        LaunchedEffect(Unit) {
+            downloadAndSaveViewModel.postLoginPreRequisiteEvents.collect { event ->
+                when (event) {
+                    PostLoginPreRequisitesEvents.NavigateToPincode -> {
+                        Navigation.navigateAndClearBackStackScreen(
+                            navigateTo = AvailableScreens.PostAuth.PincodeScreen,
+                            navController = navController
+                        )
+                    }
+
+                    PostLoginPreRequisitesEvents.NavigateToProceedScreen -> {
+                        Navigation.navigateAndClearBackStackScreen(
+                            navigateTo = proceedToScreen(),
+                            navController = navController
+                        )
+                    }
+                }
+            }
+        }
+
         LaunchedEffect(dataReceived.value) {
-            if (dataReceived.value.size == apisToCall().size) {
-                delay(800)
-                Navigation.navigateAndClearBackStackScreen(
-                    navigateTo = proceedToScreen(),
-                    navController = navController
-                )
+            if (dataReceived.value.data.size == apisToCall().size) {
+                delay(500)
+                downloadAndSaveViewModel.isApplicableForPreRequisites()
             }
         }
 
@@ -71,76 +91,91 @@ abstract class DownloadAndSaveUi {
             topBar = topAppBar,
             navController = navController,
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(dp16),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    modifier = Modifier
-                        .padding(start = dp16, top = dp16),
-                    text = title(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontSize = sp16,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
-                )
-                Spacer(modifier = Modifier.padding(vertical = dp16))
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Box(modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .fillMaxHeight(0.3f)
-                        .wrapContentHeight(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularGradientProgressBar(
-                            modifier = Modifier.fillMaxSize(),
-                            progress = (dataReceived.value.size.toFloat() / apisToCall().size),
-                        )
-                    }
+            when(dataReceived.value.status) {
+                DownloadWorkerStatus.DONE, DownloadWorkerStatus.INIT -> {
                     Column(
-                        verticalArrangement = Arrangement.SpaceEvenly,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(dp16),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = stringResource(R.string.syncing_in_progress),
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontSize = sp14,
-                                color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(start = dp16, top = dp16),
+                            text = title(),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontSize = sp16,
+                                color = MaterialTheme.colorScheme.onBackground,
                             )
                         )
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
+                        Spacer(modifier = Modifier.padding(vertical = dp16))
+                        Box(
+                            modifier = Modifier
+                                .wrapContentSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "${dataReceived.value.size}",
-                                style = MaterialTheme.typography.displaySmall.copy(
-                                    color = MaterialTheme.colorScheme.primary,
+
+                            Box(modifier = Modifier
+                                .fillMaxWidth(0.6f)
+                                .fillMaxHeight(0.3f)
+                                .wrapContentHeight(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularGradientProgressBar(
+                                    modifier = Modifier.fillMaxSize(),
+                                    progress = (dataReceived.value.data.size.toFloat() / apisToCall().size),
                                 )
-                            )
-                            Text(
-                                stringResource(R.string.slash_separator),
-                                style = MaterialTheme.typography.displayMedium.copy(
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            }
+                            Column(
+                                verticalArrangement = Arrangement.SpaceEvenly,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.syncing_in_progress),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontSize = sp14,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
                                 )
-                            )
-                            Text(
-                                text = "${apisToCall().size}",
-                                style = MaterialTheme.typography.displaySmall.copy(
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-                            )
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = "${dataReceived.value.data.size}",
+                                        style = MaterialTheme.typography.displaySmall.copy(
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                    )
+                                    Text(
+                                        stringResource(R.string.slash_separator),
+                                        style = MaterialTheme.typography.displayMedium.copy(
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        )
+                                    )
+                                    Text(
+                                        text = "${apisToCall().size}",
+                                        style = MaterialTheme.typography.displaySmall.copy(
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                    )
+                                }
+                            }
                         }
                     }
+                }
+                DownloadWorkerStatus.FAILED -> {
+                    ErrorUi(
+                        message = dataReceived.value.errorMsg,
+                        onRetry = {
+                            downloadAndSaveViewModel.startWorker(
+                                apisToCall = apisToCall(),
+                                tag = workerTagName()
+                            )
+                        }
+                    )
                 }
             }
             content?.invoke()

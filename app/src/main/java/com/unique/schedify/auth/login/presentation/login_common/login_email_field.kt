@@ -18,12 +18,13 @@ import com.unique.schedify.R
 import com.unique.schedify.auth.login.presentation.LoginViewmodel
 import com.unique.schedify.core.presentation.utils.size_units.dp8
 import com.unique.schedify.core.presentation.utils.size_units.sp16
-import com.unique.schedify.core.util.isEmailValid
 
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import com.unique.schedify.core.presentation.common_composables.getEditTextColors
+import com.unique.schedify.core.presentation.utils.isEmailValid
 
 @Composable
 fun LoginInputField(
@@ -81,20 +82,6 @@ fun LoginInputField(
                 )
             }
         },
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = MaterialTheme.colorScheme.onPrimary,
-            unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
-            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onTertiary,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onTertiary,
-            unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-            unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
-            disabledContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
-            errorIndicatorColor = MaterialTheme.colorScheme.secondary,
-            cursorColor = MaterialTheme.colorScheme.primary
-        ),
+        colors = getEditTextColors(),
     )
 }

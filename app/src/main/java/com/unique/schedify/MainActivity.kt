@@ -21,6 +21,7 @@ import com.unique.schedify.auth.login.presentation.LoginViewmodel
 import com.unique.schedify.auth.login.presentation.OtpInputScreen
 import com.unique.schedify.core.presentation.utils.GROUP_GRAPH_NAME
 import com.unique.schedify.core.presentation.utils.LOGIN_GRAPH_NAME
+import com.unique.schedify.post_auth.address.presentation.PincodeScreen
 import com.unique.schedify.post_auth.home.presentation.HomeScreen
 import com.unique.schedify.post_auth.post_auth_loading.PostAuthConsentUiScreen
 import com.unique.schedify.post_auth.post_auth_loading.PostAuthDownloadAndSaveUiScreen
@@ -170,6 +171,12 @@ class MainActivity : ComponentActivity() {
                         ScheduleListScreen(
                             navController,
                             scheduleListViewModel
+                        )
+                    }
+
+                    composable(route = Screen.PincodeScreen.route) {
+                        PincodeScreen(
+                            navController,
                         )
                     }
                 }

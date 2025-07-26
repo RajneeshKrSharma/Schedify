@@ -27,3 +27,8 @@ enum class FormFieldType {
     SECTION_HEADER,
     INFO_TEXT
 }
+
+enum class FormFieldErrorForId {
+    PINCODE,
+    EMAIL_ID
+}

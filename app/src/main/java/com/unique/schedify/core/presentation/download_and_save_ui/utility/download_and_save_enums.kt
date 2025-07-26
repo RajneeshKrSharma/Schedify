@@ -5,3 +5,9 @@ enum class PermissionState {
     granted,
     denied
 }
+
+enum class DownloadWorkerStatus {
+    INIT,
+    DONE,
+    FAILED
+}
