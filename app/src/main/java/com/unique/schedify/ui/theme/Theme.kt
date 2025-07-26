@@ -20,6 +20,7 @@ private val DarkColorScheme = darkColorScheme(
     inversePrimary = Grey,
     onTertiaryContainer = FadeWhite,
     surfaceBright = DeepGreen,
+    error = errorRed
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -36,6 +37,7 @@ private val LightColorScheme = lightColorScheme(
     inversePrimary = Grey,
     onTertiaryContainer = FadeWhite,
     surfaceBright = DeepGreen,
+    error = errorRed
 )
 
 @Composable

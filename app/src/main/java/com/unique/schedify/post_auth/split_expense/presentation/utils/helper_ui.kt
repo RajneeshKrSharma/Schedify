@@ -34,6 +34,7 @@ import com.unique.schedify.core.presentation.common_composables.FormBuilder
 import com.unique.schedify.core.presentation.common_composables.FormField
 import com.unique.schedify.core.presentation.common_composables.GradientButton
 import com.unique.schedify.core.presentation.common_composables.ImageWithLoadingIndicator
+import com.unique.schedify.core.presentation.utils.isFormValid
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 
 @Composable

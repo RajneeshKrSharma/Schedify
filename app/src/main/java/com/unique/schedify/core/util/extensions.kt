@@ -2,10 +2,9 @@ package com.unique.schedify.core.util
 
 import androidx.core.graphics.toColorInt
 import androidx.compose.ui.graphics.Color
-
-val emailPattern = EmailIdRegex.toRegex()
-
-fun String.isEmailValid(): Boolean = this.run { isNotEmpty() && matches(emailPattern) }
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 
 
 fun String?.toArgbColorInt(): Int? {
@@ -33,4 +32,14 @@ fun Pair<String?, String?>.toGradientColors(): List<Color> {
     val darkColorInt = darkHex.toArgbColorInt() ?: 0xFFFFFFFF.toInt()
 
     return listOf(Color(lightColorInt), Color(darkColorInt))
+}
+
+
+fun Context.findActivity(): Activity {
+    var ctx = this
+    while (ctx is ContextWrapper) {
+        if (ctx is Activity) return ctx
+        ctx = ctx.baseContext
+    }
+    throw IllegalStateException("Activity not found from context")
 }

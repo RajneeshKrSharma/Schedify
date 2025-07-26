@@ -16,13 +16,14 @@ class SharedPrefConfig @Inject constructor(
 
         // App-level keys
         private const val APP_KEY_FCM_TOKEN = "${APP_LEVEL_PREFIX}fcm_token"
-        private const val APP_KEY_PIN_CODE = "${APP_LEVEL_PREFIX}pin_code"
 
         // User-level keys
         private const val USER_KEY_AUTH_TOKEN = "${USER_LEVEL_PREFIX}auth_token"
         private const val USER_KEY_IS_OTP_LOGIN = "${USER_LEVEL_PREFIX}is_otp_login"
         private const val USER_KEY_AUTH_USER_ID = "${USER_LEVEL_PREFIX}auth_user_id"
         private const val USER_KEY_AUTH_USER_EMAIL = "${USER_LEVEL_PREFIX}auth_user_email"
+        private const val USER_KEY_ADDRESS = "${USER_LEVEL_PREFIX}address"
+        private const val USER_KEY_PIN_CODE = "${APP_LEVEL_PREFIX}pin_code"
     }
 
     // --------------------
@@ -34,14 +35,6 @@ class SharedPrefConfig @Inject constructor(
 
     fun getFcmToken(): String? {
         return sharedPreferences.getString(APP_KEY_FCM_TOKEN, null)
-    }
-
-    fun savePinCode(pinCode: String) {
-        sharedPreferences.edit { putString(APP_KEY_PIN_CODE, pinCode) }
-    }
-
-    fun getPinCode(): String? {
-        return sharedPreferences.getString(APP_KEY_PIN_CODE, null)
     }
 
     // --------------------
@@ -79,6 +72,25 @@ class SharedPrefConfig @Inject constructor(
         return sharedPreferences.getString(USER_KEY_AUTH_USER_EMAIL, null)
     }
 
+    fun savePinCode(pinCode: String) {
+        sharedPreferences.edit { putString(USER_KEY_PIN_CODE, pinCode) }
+    }
+
+    fun getPinCode(): String? {
+        return sharedPreferences.getString(USER_KEY_PIN_CODE, null)
+    }
+
+    fun saveAddress(address: String) {
+        sharedPreferences.edit { putString(USER_KEY_ADDRESS, address) }
+    }
+
+    fun getAddress(): String? {
+        return sharedPreferences.getString(USER_KEY_ADDRESS, null)
+    }
+
+    fun isUserLoggedIn(): Boolean {
+        return getAuthUserId() != -1
+    }
     // --------------------
     // Clear methods
     // --------------------

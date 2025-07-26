@@ -2,6 +2,8 @@ package com.unique.schedify.core.di
 
 import com.unique.schedify.auth.login.data.repository.LoginRepository
 import com.unique.schedify.auth.login.domain.repository.LoginRepositoryImpl
+import com.unique.schedify.post_auth.address.data.repository.AddressRepositoryImpl
+import com.unique.schedify.post_auth.address.domain.repository.AddressRepository
 import com.unique.schedify.post_auth.post_auth_loading.data.repository.PostAuthRepositoryImpl
 import com.unique.schedify.post_auth.post_auth_loading.domain.repository.PostAuthRepository
 import com.unique.schedify.post_auth.split_expense.data.repository.SplitExpenseRepositoryImpl
@@ -42,4 +44,11 @@ abstract class RepositoryModule {
     abstract fun bindPostAuthRepository(
         postAuthRepository: PostAuthRepositoryImpl
     ): PostAuthRepository
+
+
+    @Binds
+    @Singleton
+    abstract fun bindAddressRepository(
+        addressRepository: AddressRepositoryImpl
+    ): AddressRepository
 }

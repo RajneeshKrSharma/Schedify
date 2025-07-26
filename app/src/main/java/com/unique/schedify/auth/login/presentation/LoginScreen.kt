@@ -44,6 +44,7 @@ import com.unique.schedify.core.presentation.common_composables.GradientButton
 import com.unique.schedify.core.presentation.common_composables.GradientCircularButton
 import com.unique.schedify.core.presentation.common_composables.LoadingUi
 import com.unique.schedify.core.presentation.navigation.Navigation
+import com.unique.schedify.core.presentation.utils.isEmailValid
 import com.unique.schedify.core.presentation.utils.size_units.dp12
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp8
@@ -52,7 +53,6 @@ import com.unique.schedify.core.presentation.utils.size_units.sp32
 import com.unique.schedify.core.presentation.utils.ui_utils.AppBaseGradients
 import com.unique.schedify.core.presentation.utils.ui_utils.AvailableScreens
 import com.unique.schedify.core.util.Resource
-import com.unique.schedify.core.util.isEmailValid
 
 @Composable
 fun LoginScreen(

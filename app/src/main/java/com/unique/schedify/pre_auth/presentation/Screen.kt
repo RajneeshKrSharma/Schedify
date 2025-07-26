@@ -17,4 +17,5 @@ sealed class Screen(val route: String) {
     data object UserMappedWeatherScreen: Screen("user_mapped_weather_screen")
     // Schedule related screens
     data object ScheduleListItem: Screen("schedule_list_item")
+    data object PincodeScreen: Screen("pincode_screen")
 }

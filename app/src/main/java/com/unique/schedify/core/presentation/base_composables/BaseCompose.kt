@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,6 +55,7 @@ fun BaseCompose(
     stripModifier: Modifier = Modifier,
     navController: NavController,
     brush: Brush? = null,
+    backgroundColor: Color? = MaterialTheme.colorScheme.onSecondaryContainer,
     content: @Composable (paddingValues: PaddingValues) -> Unit,
 ) {
     // Observe the connectivity state using collectAsState
@@ -70,7 +72,13 @@ fun BaseCompose(
         content = { paddingValues ->
             Box(modifier = modifier
                 .fillMaxSize()
-                .let { if (brush != null) it.background(brush) else it }
+                .let { modifier ->
+                    if (brush != null) modifier.background(brush) else backgroundColor?.let { color ->
+                        modifier.background(
+                            color
+                        )
+                    } ?: modifier
+                }
             ) {
                 Column(
                     modifier = contentModifier

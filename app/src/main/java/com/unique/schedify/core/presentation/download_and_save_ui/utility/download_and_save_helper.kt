@@ -81,13 +81,13 @@ class PreAuthApiHandler @Inject constructor(
                             preAuthDao.insertHomeCellDetail(prepareHomeCellDetail ?: emptyList())
                         }
 
-                        Result.success(workDataOf("api" to apiName, "status" to "done"))
+                        Result.success(workDataOf(API to apiName))
                     }
 
-                    is ApiResponseResource.Error -> Result.failure()
+                    is ApiResponseResource.Error -> Result.failure(workDataOf(FAILURE_MSG to response.errorMessage))
                 }
             }
-            else -> Result.failure()
+            else -> Result.failure(workDataOf(FAILURE_MSG to "No handler for PreAuthDownloadApis | Api name $apiName !"))
         }
     }
 }
@@ -103,15 +103,21 @@ class PostAuthApiHandler @Inject constructor(
             PostAuthDownloadApis.POST_AUTH_DETAIL.name -> {
                 return(when (val response = getPostAuthDetailsUseCase.execute()) {
                     is ApiResponseResource.Success -> {
-                        val data = response.data
-                        data.addressDetail?.pincode?.let { pincode ->
-                            sharedPrefConfig.savePinCode(pinCode = pincode)
-                        }
+                        val data = response.data.addressDetail
+                        (data?.pincode?.let { pincode ->
+                            data.address?.let { address ->
+                                (pincode to address)
+                            }
+                        })?.let { (pincode, address) ->
+                            sharedPrefConfig.savePinCode(pinCode =  pincode)
+                            sharedPrefConfig.saveAddress(address = address)
+                        } // this comes null then after post download and save, It will be checked if
+                        // won't exists then pincode screen will triggered.
 
-                        Result.success(workDataOf("api" to apiName, "status" to "done"))
+                        Result.success(workDataOf(API to apiName))
                     }
                     is ApiResponseResource.Error -> {
-                        Result.failure()
+                        Result.failure(workDataOf(FAILURE_MSG to response.errorMessage))
                     }
                 })
             }
@@ -161,16 +167,16 @@ class PostAuthApiHandler @Inject constructor(
                             }
                             userMappedWeatherStatusDao.deleteUserMappedWeatherStatusData()
                             userMappedWeatherStatusDao.insertUserMappedWeatherStatusDaoData(mappedList)
-                            Result.success(workDataOf("api" to apiName, "status" to "done"))
+                            Result.success(workDataOf(API to apiName))
                         }
 
                         is ApiResponseResource.Error -> {
-                            Result.failure()
+                            Result.failure(workDataOf(FAILURE_MSG to response.errorMessage))
                         }
                     }
-                } ?: Result.success(workDataOf("api" to apiName, "status" to "done | no pincode"))
+                } ?: Result.success(workDataOf(API to apiName))
             }
-            else -> Result.failure()
+            else -> Result.failure(workDataOf(FAILURE_MSG to "No handler for PostAuthDownloadApis | Api name $apiName !"))
         }
     }
 }

@@ -50,6 +50,7 @@ import com.unique.schedify.core.presentation.common_composables.GradientButton
 import com.unique.schedify.core.presentation.common_composables.LoadingUi
 import com.unique.schedify.core.presentation.common_composables.OutlinedGradientButton
 import com.unique.schedify.core.presentation.common_composables.SquareBoundaryProgressBar
+import com.unique.schedify.core.presentation.common_composables.getEditTextColors
 import com.unique.schedify.core.presentation.navigation.Navigation
 import com.unique.schedify.core.presentation.utils.size_units.dp16
 import com.unique.schedify.core.presentation.utils.size_units.dp60
@@ -250,6 +251,7 @@ fun OtpInputFieldsUi(
                                 }
                             }
                         },
+                        colors = getEditTextColors(),
                         modifier = Modifier
                             .width(dp60)
                             .height(dp60),

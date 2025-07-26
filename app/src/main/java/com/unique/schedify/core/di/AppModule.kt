@@ -11,6 +11,7 @@ import com.unique.schedify.core.PendingRequestManager
 import com.unique.schedify.core.config.SharedPrefConfig
 import com.unique.schedify.core.local_db.SchedifyDatabase
 import com.unique.schedify.core.network.Api
+import com.unique.schedify.post_auth.address.data.remote.dto.AddressApis
 import com.unique.schedify.post_auth.post_auth_loading.data.remote.PostAuthApis
 import com.unique.schedify.post_auth.post_auth_loading.local.UserMappedWeatherStatusDao
 import com.unique.schedify.post_auth.schedule_list.remote.ScheduleListApis
@@ -83,6 +84,12 @@ object AppModule {
     @Singleton
     fun provideSplitExpenseApi(retrofit: Retrofit): SplitExpenseApis {
         return retrofit.create(SplitExpenseApis::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddressApi(retrofit: Retrofit): AddressApis {
+        return retrofit.create(AddressApis::class.java)
     }
 
     @Provides

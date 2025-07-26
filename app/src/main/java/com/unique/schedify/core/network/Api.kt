@@ -24,7 +24,8 @@ object Api {
 
     const val SCHEDULE_LIST = "api/schedule-list/schedule-items"
     const val UPLOAD_ATTACHMENTS = "api/schedule-list/schedule-items/upload-attachments"
-    const val PIN_CODE_VERIFY = "https://api.postalpincode.in/pincode/"
-    const val ADD_ADDRESS = "/api/address/pincode"
     const val GET_STATUS = "/api/weather/get-status"
+    const val FETCH_PIN_CODES = "https://api.postalpincode.in/pincode/"
+    const val ADD_ADDRESS = "/api/address/pincode"
+
 }

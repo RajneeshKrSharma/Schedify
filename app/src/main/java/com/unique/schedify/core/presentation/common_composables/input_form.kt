@@ -1,6 +1,5 @@
 package com.unique.schedify.core.presentation.common_composables
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +30,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,10 +38,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.unique.schedify.R
+import com.unique.schedify.core.presentation.utils.FormFieldErrorForId
 import com.unique.schedify.core.presentation.utils.FormFieldType
+import com.unique.schedify.core.presentation.utils.isEmailValid
+import com.unique.schedify.core.presentation.utils.isPincodeValid
 import com.unique.schedify.core.presentation.utils.size_units.dp12
 import com.unique.schedify.core.presentation.utils.size_units.dp16
-import com.unique.schedify.core.util.isEmailValid
+import com.unique.schedify.post_auth.address.presentation.utils.PINCODE_LENGTH
 
 data class VisibilityCondition(
     val fieldId: String,
@@ -55,7 +58,8 @@ data class FormField(
     val options: List<String>? = null,
     val value: String = "",
     val isRequired: Boolean = false,
-    val visibleIf: VisibilityCondition? = null
+    val visibleIf: VisibilityCondition? = null,
+    val formFieldErrorForId: FormFieldErrorForId? = null,
 )
 
 @Composable
@@ -85,9 +89,13 @@ fun getEditTextColors(): TextFieldColors =
         unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
             alpha = 0.5f
         ),
+        disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
+            alpha = 0.5f
+        ),
         disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
         errorIndicatorColor = MaterialTheme.colorScheme.secondary,
-        cursorColor = MaterialTheme.colorScheme.primary
+        cursorColor = MaterialTheme.colorScheme.primary,
+        disabledContainerColor = MaterialTheme.colorScheme.onTertiaryContainer
     )
 
 @Composable
@@ -96,7 +104,7 @@ fun FormBuilder(
     onFormChanged: (Map<String, String>) -> Unit,
     onDone: () -> Unit,
 ) {
-    val formState = remember { mutableStateMapOf<String, String>() }
+    val formState: SnapshotStateMap<String, String> = remember { mutableStateMapOf() }
 
     fields.forEach { field ->
         if (formState[field.id] == null) {
@@ -124,11 +132,11 @@ fun FormBuilder(
                     formState[it.fieldId]?.split(",")?.contains(it.expectedValue) == true
                 } ?: true
             } == index
-
-            val imeAction = if (isLastField) ImeAction.Done else ImeAction.Next
+            val imeActionCondition = isLastField && isFieldValid(field = field, formState = formState)
+            val imeAction = if (imeActionCondition) ImeAction.Done else ImeAction.Next
             val keyboardActions = KeyboardActions(
                 onDone = {
-                    if (isLastField) {
+                    if (imeActionCondition) {
                         onDone()
                     }
                 }
@@ -151,23 +159,38 @@ fun FormBuilder(
                         ),
                         keyboardActions = keyboardActions,
                         value = formState[field.id] ?: "",
-                        onValueChange = { updateField(field.id, it) },
+                        onValueChange = { input ->
+                            val filteredInput = when (field.type) {
+                                FormFieldType.NUMBER -> filterByFormFieldErrorForId(input, field.formFieldErrorForId)
+                                else -> input
+                            }
+                            updateField(field.id, filteredInput)
+                        },
                         label = { RequiredLabel(field.label, isActuallyRequired) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = getEditTextColors(),
                         supportingText = {
-                            when (field.type) {
-                                FormFieldType.EMAIL -> {
-                                    if (formState[field.id]?.isNotEmpty() == true && formState[field.id]?.isEmailValid() == false) {
+                            when (field.formFieldErrorForId) {
+                                FormFieldErrorForId.EMAIL_ID -> {
+                                    if (formState[field.id].isNullOrEmpty().not() && isFieldValid(field = field, formState = formState).not()) {
                                         Text(
                                             stringResource(R.string.invalid_email_format),
                                             style = MaterialTheme.typography.labelMedium.copy(
-                                                color = MaterialTheme.colorScheme.secondary
+                                                color = MaterialTheme.colorScheme.error
                                             )
                                         )
                                     }
                                 }
-                                FormFieldType.NUMBER -> {}
+                                FormFieldErrorForId.PINCODE -> {
+                                    if (formState[field.id].isNullOrEmpty().not() && isFieldValid(field = field, formState = formState).not()) {
+                                        Text(
+                                            "Invalid pincode",
+                                            style = MaterialTheme.typography.labelMedium.copy(
+                                                color = MaterialTheme.colorScheme.error
+                                            )
+                                        )
+                                    }
+                                }
                                 else -> {}
                             }
                         }
@@ -247,25 +270,7 @@ fun FormBuilder(
                             trailingIcon = {
                                 Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                             },
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = MaterialTheme.colorScheme.primary,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
-                                    alpha = 0.5f
-                                ),
-                                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                                unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
-                                    alpha = 0.5f
-                                ),
-                                unfocusedContainerColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                                focusedContainerColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(
-                                    alpha = 0.5f
-                                ),
-                                disabledIndicatorColor = MaterialTheme.colorScheme.onTertiary,
-                                errorIndicatorColor = MaterialTheme.colorScheme.secondary,
-                                cursorColor = MaterialTheme.colorScheme.primary
-                            )
+                            colors = getEditTextColors()
 
                         )
                         DropdownMenu(
@@ -296,5 +301,30 @@ fun FormBuilder(
                 }
             }
         }
+    }
+}
+
+private fun isFieldValid(
+    field: FormField,
+    formState: SnapshotStateMap<String, String>
+): Boolean {
+    return (when (field.formFieldErrorForId) {
+        FormFieldErrorForId.EMAIL_ID -> formState[field.id]?.isEmailValid() == true
+        FormFieldErrorForId.PINCODE -> formState[field.id]?.isPincodeValid() == true
+
+        else -> {
+            false
+        }
+    })
+}
+
+fun filterByFormFieldErrorForId(
+    input: String,
+    formFieldErrorForId: FormFieldErrorForId?
+): String {
+    val digitsOnly = input.filter { it.isDigit() }
+    return when (formFieldErrorForId) {
+        FormFieldErrorForId.PINCODE -> digitsOnly.take(PINCODE_LENGTH)
+        else -> digitsOnly
     }
 }
